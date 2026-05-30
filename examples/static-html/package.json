@@ -1,0 +1,9 @@
+{
+  "name": "@ai-chat-toolkit/example-static-html",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Static HTML example for the AI chat widget",
+  "scripts": {
+    "dev": "pnpm --filter @ai-chat-toolkit/widget build && npx --yes serve . -p 4173"
+  }
+}
