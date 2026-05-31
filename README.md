@@ -114,7 +114,7 @@ See [examples/README.md](./examples/README.md) for which example to use.
 
 ## Full Stack Local Demo
 
-![Full Stack Local Demo — widget + server running locally](./docs/assets/full-stack-local-demo.gif)
+![Full Stack Local Demo — widget + server running locally](./docs/assets/demo-ai-chat-toolkit.gif)
 
 Pre-publish integration test that runs **`ai-chat-toolkit-widget`** and **`ai-chat-toolkit-server`** from the monorepo workspace (not published npm packages).
 
