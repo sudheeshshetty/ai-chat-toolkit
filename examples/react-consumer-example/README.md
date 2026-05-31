@@ -4,7 +4,7 @@ Official sample application showing how to use [`ai-chat-toolkit-widget`](https:
 
 This example **installs the widget from the public npm registry** — the same way a real consumer app would. It does not import the local monorepo package or use `workspace:*` linking.
 
-> **Note for monorepo contributors:** Other packages in the main `ai-chat-toolkit` repo may use pnpm workspace linking during development. This example is **excluded from the pnpm workspace** and intentionally depends on the **published npm package** (`^0.1.1`) so it mirrors real-world usage. You can copy this folder outside the monorepo and run it standalone with `npm install` and `npm run dev`.
+> **Note for monorepo contributors:** Other packages in the main `ai-chat-toolkit` repo may use pnpm workspace linking during development. This example is **excluded from the pnpm workspace** and intentionally depends on the **published npm package** so it mirrors real-world usage. You can copy this folder outside the monorepo and run it standalone with `npm install` and `npm run dev`.
 
 ## Installation
 
@@ -66,10 +66,11 @@ declare module "react" {
   title="AI Assistant"
   subtitle="Ask me anything"
   primary-color="#2563eb"
-  backend-url="http://localhost:3000"
   path="/ai-chat/custom"
 />
 ```
+
+Omit `backend-url` to use the same origin as the page (recommended — avoids CORS). This example proxies `/ai-chat/*` to the mock API on port 3000 via Vite.
 
 #### Basic usage
 
@@ -87,10 +88,11 @@ import "ai-chat-toolkit-widget";
   subtitle="How can I help?"
   logo="https://example.com/logo.png"
   primary-color="#2563eb"
-  backend-url="http://localhost:3000"
   path="/ai-chat/custom"
 />
 ```
+
+For a cross-origin API, set `backend-url="https://api.example.com"` and enable CORS on the server.
 
 ## Available Properties
 
@@ -119,9 +121,9 @@ This starts:
 | Service        | URL                        |
 |----------------|----------------------------|
 | React app      | http://localhost:5173      |
-| Mock backend   | http://localhost:3000      |
+| Mock backend   | http://localhost:3000 (proxied via `/ai-chat/*`) |
 
-Open the app, click the chat button, and send a message.
+Open the app, click the chat button, and send a message. Chat requests go to the same origin (`/ai-chat/custom`) so no CORS setup is needed during development.
 
 Other scripts:
 

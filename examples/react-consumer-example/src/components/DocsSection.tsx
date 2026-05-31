@@ -29,7 +29,6 @@ export function DocsSection() {
   subtitle="How can I help?"
   logo="https://example.com/logo.png"
   primary-color="#2563eb"
-  backend-url="http://localhost:3000"
   path="/ai-chat/custom"
 />`}</code>
           </pre>

@@ -78,7 +78,9 @@ registerAiChatElement();
 { "response": "assistant response" }
 ```
 
-Non-2xx responses and network errors are shown inline in the chat UI.
+Non-2xx responses and network errors are shown as text in the chat.
+
+If the API is on a different domain than the page, the API server must enable CORS. The widget cannot bypass that browser restriction.
 
 ## Programmatic API
 

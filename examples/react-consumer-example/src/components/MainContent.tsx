@@ -10,8 +10,9 @@ export function MainContent() {
           message to try the demo backend.
         </p>
         <p className="hero__note">
-          Start the app with <code>npm run dev</code> to launch both the Vite
-          dev server and the mock API on port 3000.
+          Start the app with <code>npm run dev</code>. Chat requests use the same
+          origin as the page (no CORS) and are proxied to the mock API on port
+          3000.
         </p>
       </div>
     </section>

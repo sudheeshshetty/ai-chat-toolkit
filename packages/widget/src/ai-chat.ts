@@ -56,7 +56,7 @@ function normalizePath(path: string): string {
 
 function resolveBackendUrl(value: string | null): string {
   if (value?.trim()) {
-    return value.replace(/\/$/, "");
+    return value.trim().replace(/\/$/, "");
   }
   if (typeof window !== "undefined" && window.location?.origin) {
     return window.location.origin;
@@ -384,7 +384,7 @@ export class AiChatElement extends HTMLElement {
       throw new Error("Backend URL is not configured.");
     }
 
-    const url = `${backendUrl}${path}`;
+    const url = `${backendUrl}${normalizePath(path)}`;
     const payload: ChatRequestPayload = {
       message: latestMessage,
       history: historyForBackend(this.#messages).slice(0, -1),
@@ -398,7 +398,9 @@ export class AiChatElement extends HTMLElement {
         body: JSON.stringify(payload),
       });
     } catch {
-      throw new Error("Unable to reach the chat backend. Check your network or server.");
+      throw new Error(
+        `Request to ${url} failed. The server may be offline, the URL may be wrong, or the browser blocked the request (CORS). Enable CORS on the API or proxy it through the same domain as this page.`,
+      );
     }
 
     let body: unknown;

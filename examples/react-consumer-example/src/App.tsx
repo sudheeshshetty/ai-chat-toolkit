@@ -26,7 +26,6 @@ export default function App() {
         title="AI Assistant"
         subtitle="Ask me anything"
         primary-color="#2563eb"
-        backend-url="http://localhost:3000"
         path="/ai-chat/custom"
       />
     </>
