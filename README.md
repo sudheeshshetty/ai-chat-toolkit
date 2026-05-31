@@ -83,8 +83,10 @@ Content-Type: application/json
 
 ```
 ai-chat-toolkit/
-  packages/widget/     # @ai-chat-toolkit/widget
-  examples/static-html/  # Local demo page
+  packages/widget/                # ai-chat-toolkit-widget
+  examples/static-html/           # Vanilla HTML demo
+  examples/react-consumer-example/  # Official React consumer example (npm, not workspace)
+  examples/react-workerhub/       # Branded integration demo
 ```
 
 ## Scripts
@@ -95,14 +97,19 @@ ai-chat-toolkit/
 | `pnpm dev` | Watch-build the widget |
 | `pnpm clean` | Remove build artifacts |
 
-### Local example
+### Local examples
+
+**Static HTML** — open `examples/static-html/index.html` after building the widget.
+
+**React (official consumer example)** — uses the published npm package, not workspace linking:
 
 ```bash
-pnpm install
-pnpm build
-# Open examples/static-html/index.html via a static server after building the widget.
-# A backend must handle POST /ai-chat/custom (or your configured path).
+cd examples/react-consumer-example
+npm install
+npm run dev
 ```
+
+Opens the React app at http://localhost:5173 and a mock backend at http://localhost:3000.
 
 ## Roadmap
 

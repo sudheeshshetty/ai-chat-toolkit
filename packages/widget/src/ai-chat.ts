@@ -15,6 +15,13 @@ const DEFAULT_PLACEHOLDER = "Type a message…";
 const DEFAULT_PRIMARY_COLOR = "#2563eb";
 const DEFAULT_POSITION: WidgetPosition = "bottom-right";
 
+const POSITION_CLASSES = [
+  "position-bottom-right",
+  "position-bottom-left",
+  "position-top-right",
+  "position-top-left",
+] as const;
+
 const OBSERVED_ATTRIBUTES = [
   "title",
   "subtitle",
@@ -58,11 +65,19 @@ function resolveBackendUrl(value: string | null): string {
 }
 
 function parseResponseText(payload: ChatResponsePayload): string {
-  const text = payload.message ?? payload.response;
-  if (!text?.trim()) {
+  const raw = payload.message ?? payload.response;
+  const text = typeof raw === "string" ? raw : String(raw ?? "");
+  if (!text.trim()) {
     throw new Error("Backend returned an empty response.");
   }
   return text.trim();
+}
+
+function historyForBackend(messages: ChatMessage[]): ChatMessage[] {
+  return messages.filter(
+    (message): message is ChatMessage & { role: "user" | "assistant" } =>
+      message.role === "user" || message.role === "assistant",
+  );
 }
 
 export class AiChatElement extends HTMLElement {
@@ -269,10 +284,29 @@ export class AiChatElement extends HTMLElement {
     const { primaryColor, position, placeholder } = this.config;
     this.style.setProperty("--primary", primaryColor);
     this.style.setProperty("--primary-hover", shadeColor(primaryColor, -20));
-    this.setAttribute("position", position);
-    this.#input.placeholder = placeholder;
+    this.#applyPosition(position);
+    if (this.#input) {
+      this.#input.placeholder = placeholder;
+    }
     this.#updateHeader();
     this.#updateFab();
+    this.#restorePanelState();
+  }
+
+  #applyPosition(position: WidgetPosition): void {
+    for (const className of POSITION_CLASSES) {
+      this.classList.remove(className);
+    }
+    this.classList.add(`position-${position}`);
+  }
+
+  #restorePanelState(): void {
+    if (!this.#panel || !this.#fab) {
+      return;
+    }
+    this.#panel.classList.toggle("open", this.#isOpen);
+    this.#fab.hidden = this.#isOpen;
+    this.#fab.setAttribute("aria-expanded", String(this.#isOpen));
   }
 
   #updateHeader(): void {
@@ -338,7 +372,7 @@ export class AiChatElement extends HTMLElement {
         error instanceof Error
           ? error.message
           : "Something went wrong. Please try again.";
-      this.#showError(message);
+      this.#messages.push({ role: "error", content: message });
     } finally {
       this.#setLoading(false);
     }
@@ -353,7 +387,7 @@ export class AiChatElement extends HTMLElement {
     const url = `${backendUrl}${path}`;
     const payload: ChatRequestPayload = {
       message: latestMessage,
-      history: this.#messages.slice(0, -1),
+      history: historyForBackend(this.#messages).slice(0, -1),
     };
 
     let response: Response;
@@ -379,26 +413,36 @@ export class AiChatElement extends HTMLElement {
     }
 
     if (!response.ok) {
-      const err =
-        typeof body === "object" &&
-        body !== null &&
-        "error" in body &&
-        typeof (body as { error: unknown }).error === "string"
-          ? (body as { error: string }).error
-          : `Request failed (${response.status}).`;
-      throw new Error(err);
+      throw new Error(this.#parseErrorMessage(body, response.status));
     }
 
     return parseResponseText(body as ChatResponsePayload);
   }
 
-  #showError(message: string): void {
-    const el = document.createElement("div");
-    el.className = "message error";
-    el.setAttribute("role", "alert");
-    el.textContent = message;
-    this.#messagesEl.appendChild(el);
-    this.#messagesEl.scrollTop = this.#messagesEl.scrollHeight;
+  #parseErrorMessage(body: unknown, status: number): string {
+    if (typeof body === "object" && body !== null) {
+      if ("error" in body) {
+        const errorValue = (body as { error: unknown }).error;
+        if (typeof errorValue === "string" && errorValue.trim()) {
+          return errorValue;
+        }
+        if (
+          typeof errorValue === "object" &&
+          errorValue !== null &&
+          "message" in errorValue &&
+          typeof (errorValue as { message: unknown }).message === "string"
+        ) {
+          return (errorValue as { message: string }).message;
+        }
+      }
+      if (
+        "message" in body &&
+        typeof (body as { message: unknown }).message === "string"
+      ) {
+        return (body as { message: string }).message;
+      }
+    }
+    return `Request failed (${status}).`;
   }
 
   #renderMessages(): void {
@@ -414,6 +458,9 @@ export class AiChatElement extends HTMLElement {
       for (const msg of this.#messages) {
         const el = document.createElement("div");
         el.className = `message ${msg.role}`;
+        if (msg.role === "error") {
+          el.setAttribute("role", "alert");
+        }
         el.textContent = msg.content;
         fragment.appendChild(el);
       }

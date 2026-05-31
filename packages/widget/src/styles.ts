@@ -23,22 +23,22 @@ export function getStyles(): string {
       pointer-events: none;
     }
 
-    :host([position="bottom-right"]) {
+    :host(.position-bottom-right) {
       bottom: 24px;
       right: 24px;
     }
 
-    :host([position="bottom-left"]) {
+    :host(.position-bottom-left) {
       bottom: 24px;
       left: 24px;
     }
 
-    :host([position="top-right"]) {
+    :host(.position-top-right) {
       top: 24px;
       right: 24px;
     }
 
-    :host([position="top-left"]) {
+    :host(.position-top-left) {
       top: 24px;
       left: 24px;
     }
@@ -51,8 +51,8 @@ export function getStyles(): string {
       pointer-events: auto;
     }
 
-    :host([position="bottom-left"]) .root,
-    :host([position="top-left"]) .root {
+    :host(.position-bottom-left) .root,
+    :host(.position-top-left) .root {
       align-items: flex-start;
     }
 

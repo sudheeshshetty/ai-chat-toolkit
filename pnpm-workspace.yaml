@@ -1,3 +1,6 @@
 packages:
   - "packages/*"
-  - "examples/*"
+  - "examples/static-html"
+  - "examples/react-workerhub"
+  # react-consumer-example is intentionally excluded — it uses the published npm
+  # package and should run independently via npm install / npm run dev
