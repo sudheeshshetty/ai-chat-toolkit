@@ -21,8 +21,8 @@ const app = express();
 const aiChat = new AiChatServer({
   path: "/ai-chat/custom",
   provider: "groq",
-  apiKey: process.env.GROQ_API_KEY,
-  model: "llama-3.3-70b-versatile",
+  apiKey: process.env.API_KEY,
+  model: process.env.MODEL ?? "llama-3.3-70b-versatile",
   cors: {
     origin: "http://localhost:5173",
   },
@@ -48,8 +48,8 @@ const aiChat = new AiChatServer({
 ```ts
 const aiChat = new AiChatServer({
   provider: "groq",
-  apiKey: process.env.GROQ_API_KEY,
-  model: "llama-3.3-70b-versatile",
+  apiKey: process.env.API_KEY,
+  model: process.env.MODEL ?? "llama-3.3-70b-versatile",
 });
 ```
 

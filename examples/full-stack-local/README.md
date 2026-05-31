@@ -26,7 +26,7 @@ From the monorepo root:
 pnpm install
 pnpm build
 cp examples/full-stack-local/.env.example examples/full-stack-local/.env
-# Edit .env and set GROQ_API_KEY (https://console.groq.com/)
+# Edit .env: set API_KEY and MODEL for your provider (default example uses Groq)
 pnpm --filter full-stack-local-example dev
 ```
 
@@ -40,9 +40,12 @@ pnpm dev
 ## Environment
 
 ```env
-GROQ_API_KEY=
-GROQ_MODEL=llama-3.3-70b-versatile
+API_KEY=              # API key for the configured provider
+MODEL=llama-3.3-70b-versatile
+PORT=3333
 ```
+
+Change `provider` in `server/index.ts` to use OpenAI, Gemini, Ollama, etc., and set `API_KEY` / `MODEL` accordingly.
 
 ## Scripts
 
@@ -94,7 +97,7 @@ curl -X POST http://localhost:3334/my-chat \
 1. Run **`pnpm dev`** (both server and web). `pnpm dev:web` alone will not start the API.
 2. `PORT` in `.env` must match — Vite proxies to that port (e.g. `3334`).
 3. Confirm backend: `curl http://localhost:3334/ai-chat/health`
-4. Check `GROQ_API_KEY` in `.env`
+4. Check `API_KEY` and `MODEL` in `.env`
 
 ## License
 

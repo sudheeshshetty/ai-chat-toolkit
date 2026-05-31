@@ -51,8 +51,8 @@ const app = express();
 const aiChat = new AiChatServer({
   path: "/ai-chat/custom",
   provider: "groq",
-  apiKey: process.env.GROQ_API_KEY,
-  model: "llama-3.3-70b-versatile",
+  apiKey: process.env.API_KEY,
+  model: process.env.MODEL ?? "llama-3.3-70b-versatile",
   cors: { origin: "http://localhost:5173" },
 });
 
@@ -139,7 +139,7 @@ Each workflow bumps only that package, creates a prefixed git tag (`widget-v*`, 
 ```bash
 pnpm build
 cp examples/full-stack-local/.env.example examples/full-stack-local/.env
-# add GROQ_API_KEY
+# add API_KEY and MODEL (Groq example)
 pnpm --filter full-stack-local-example dev
 ```
 

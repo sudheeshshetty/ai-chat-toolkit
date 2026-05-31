@@ -10,8 +10,8 @@ const PORT = Number(process.env.PORT) || 3333;
 const aiChat = new AiChatServer({
   path: "/my-chat",
   provider: "groq",
-  apiKey: process.env.GROQ_API_KEY,
-  model: process.env.GROQ_MODEL || "llama-3.3-70b-versatile",
+  apiKey: process.env.API_KEY,
+  model: process.env.MODEL || "llama-3.3-70b-versatile",
   cors: {
     origin: "http://localhost:5173",
     credentials: true,
