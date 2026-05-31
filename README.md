@@ -1,56 +1,80 @@
 # ai-chat-toolkit
 
-Open-source toolkit for embedding an AI-powered chat widget in any web app. Ships as a framework-agnostic Web Component with Shadow DOM isolation, publishable to npm and loadable from a CDN.
+Open-source toolkit for embedding an AI-powered chat widget in any web app, with an optional Express backend for LLM providers and tool calling.
 
-**Current scope:** frontend widget package (`@ai-chat-toolkit/widget`). A backend package for hosting the chat API will be added in a future release.
+## Packages
 
-## Quick start (CDN)
+| Package | npm name | Description |
+|---------|----------|-------------|
+| Widget | `ai-chat-toolkit-widget` | Embeddable Web Component (Shadow DOM) |
+| Server | `ai-chat-toolkit-server` | Express backend with LLM providers + tools |
+
+```
+Frontend App
+    ↓
+<ai-chat> widget  (ai-chat-toolkit-widget)
+    ↓
+ai-chat-toolkit-server
+    ↓
+LLM Provider (OpenAI, Groq, Gemini, Ollama, …)
+    ↓
+Registered Tools
+    ↓
+Your APIs / DB / Services
+```
+
+## Quick start (CDN widget)
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/@ai-chat-toolkit/widget/dist/widget.global.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/ai-chat-toolkit-widget/dist/widget.global.js"></script>
 
 <ai-chat
-  title="WorkerHub Assistant"
-  subtitle="How can I help today?"
-  logo="/assets/logo.png"
-  primary-color="#2563eb"
-  backend-url="https://api.example.com"
-  path="/my-chat"
+  title="AI Assistant"
+  subtitle="How can I help?"
+  backend-url="http://localhost:3000"
+  path="/ai-chat/custom"
 ></ai-chat>
 ```
 
-If `backend-url` is omitted, requests go to `window.location.origin`. If `path` is omitted, the default is `/ai-chat/custom`.
-
-## npm install
+## Quick start (Express backend)
 
 ```bash
-pnpm add @ai-chat-toolkit/widget
+npm install ai-chat-toolkit-server express
 ```
 
 ```ts
-import "@ai-chat-toolkit/widget";
-// or
-import { registerAiChatElement } from "@ai-chat-toolkit/widget";
+import express from "express";
+import { AiChatServer } from "ai-chat-toolkit-server";
 
-registerAiChatElement();
+const app = express();
+
+const aiChat = new AiChatServer({
+  path: "/ai-chat/custom",
+  provider: "groq",
+  apiKey: process.env.GROQ_API_KEY,
+  model: "llama-3.3-70b-versatile",
+  cors: { origin: "http://localhost:5173" },
+});
+
+aiChat.attach(app);
+app.listen(3000);
 ```
 
-## Attributes
+See [packages/server/README.md](./packages/server/README.md) for providers, tools, and security notes.
 
-| Attribute        | Default              | Description |
-|------------------|----------------------|-------------|
-| `title`          | `AI Assistant`       | Header title |
-| `subtitle`       | `How can I help you today?` | Header subtitle |
-| `logo`           | _(none)_             | Logo image URL (FAB + header) |
-| `primary-color`  | `#2563eb`            | Theme accent color |
-| `backend-url`    | `window.location.origin` | API base URL |
-| `path`           | `/ai-chat/custom`    | Chat API path |
-| `placeholder`    | `Type a message…`    | Message input placeholder |
-| `position`       | `bottom-right`       | Widget corner: `bottom-right`, `bottom-left`, `top-right`, `top-left` |
+## Widget install
 
-See [packages/widget/README.md](./packages/widget/README.md) for package-level details.
+```bash
+npm install ai-chat-toolkit-widget
+```
 
-## Backend API contract
+```ts
+import "ai-chat-toolkit-widget";
+```
+
+See [packages/widget/README.md](./packages/widget/README.md) for attributes and CDN usage.
+
+## Chat API contract
 
 ```
 POST ${backendUrl}${path}
@@ -64,44 +88,62 @@ Content-Type: application/json
   "message": "Hello",
   "history": [
     { "role": "user", "content": "Hi" },
-    { "role": "assistant", "content": "Hello! How can I help?" }
+    { "role": "assistant", "content": "Hello!" }
   ]
 }
 ```
 
-**Response** (support either shape):
+**Response:**
 
 ```json
-{ "message": "Here is my reply." }
-```
-
-```json
-{ "response": "Here is my reply." }
+{ "message": "Assistant reply" }
 ```
 
 ## Monorepo layout
 
 ```
 ai-chat-toolkit/
-  packages/widget/                # ai-chat-toolkit-widget
-  examples/static-html/           # Vanilla HTML demo
-  examples/react-consumer-example/  # Official React consumer example (npm, not workspace)
-  examples/react-workerhub/       # Branded integration demo
+  packages/widget/              # ai-chat-toolkit-widget
+  packages/server/              # ai-chat-toolkit-server
+  examples/static-html/         # CDN demo
+  examples/react-consumer-example/  # React + published npm widget
+  examples/full-stack-local/    # Optional: workspace widget + server (pre-publish)
 ```
+
+See [examples/README.md](./examples/README.md) for which example to use.
 
 ## Scripts
 
 | Command | Description |
 |---------|-------------|
 | `pnpm build` | Build all packages |
-| `pnpm dev` | Watch-build the widget |
 | `pnpm clean` | Remove build artifacts |
+| `pnpm dev:widget` | Watch-build widget |
+| `pnpm dev:server` | Watch-build server |
 
-### Local examples
+## Publishing to npm
 
-**Static HTML** — open `examples/static-html/index.html` after building the widget.
+Packages are released **independently** via GitHub Actions (manual dispatch):
 
-**React (official consumer example)** — uses the published npm package, not workspace linking:
+| Workflow | Package | npm name |
+|----------|---------|----------|
+| **Release ai-chat-toolkit-widget** | `packages/widget` | `ai-chat-toolkit-widget` |
+| **Release ai-chat-toolkit-server** | `packages/server` | `ai-chat-toolkit-server` |
+
+Each workflow bumps only that package, creates a prefixed git tag (`widget-v*`, `server-v*`), and publishes to npm. Requires `NPM_TOKEN` in repo secrets.
+
+### Examples
+
+**Full stack local (maintainers — workspace packages, Groq):**
+
+```bash
+pnpm build
+cp examples/full-stack-local/.env.example examples/full-stack-local/.env
+# add GROQ_API_KEY
+pnpm --filter full-stack-local-example dev
+```
+
+**React consumer (published npm widget):**
 
 ```bash
 cd examples/react-consumer-example
@@ -109,14 +151,13 @@ npm install
 npm run dev
 ```
 
-Opens the React app at http://localhost:5173 and a mock backend at http://localhost:3000.
-
 ## Roadmap
 
-- [ ] **`@ai-chat-toolkit/backend`** — Reference Node.js server implementing the chat API contract
+- [x] Widget package
+- [x] Server package with tool calling
 - [ ] Streaming responses
-- [ ] Theming presets and i18n
-- [ ] Framework wrappers (optional)
+- [ ] Gemini / Ollama tool calling
+- [ ] Fastify / NestJS adapters
 
 ## License
 
