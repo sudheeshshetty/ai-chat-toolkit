@@ -23,6 +23,7 @@ export default function App() {
       <Footer />
 
       <ai-chat
+        backend-url="http://localhost:3030"
         title="AI Assistant"
         subtitle="Ask me anything"
         primary-color="#2563eb"
