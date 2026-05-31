@@ -346,9 +346,22 @@ export class AiChatElement extends HTMLElement {
 
   #setLoading(loading: boolean): void {
     this.#isLoading = loading;
-    this.#input.disabled = loading;
+    // readOnly keeps focus in the textarea; disabled would blur it
+    this.#input.readOnly = loading;
     this.#sendBtn.disabled = loading;
     this.#renderMessages();
+    if (!loading) {
+      this.#focusInput();
+    }
+  }
+
+  #focusInput(): void {
+    if (!this.#isOpen || this.#isLoading) {
+      return;
+    }
+    requestAnimationFrame(() => {
+      this.#input.focus();
+    });
   }
 
   async #sendMessage(): Promise<void> {

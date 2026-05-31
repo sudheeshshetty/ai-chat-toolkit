@@ -304,7 +304,8 @@ export function getStyles(): string {
       border-color: var(--primary);
     }
 
-    .composer textarea:disabled {
+    .composer textarea:disabled,
+    .composer textarea:read-only {
       opacity: 0.6;
       cursor: not-allowed;
     }
