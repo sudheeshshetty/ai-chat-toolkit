@@ -6,7 +6,7 @@
   "license": "MIT",
   "scripts": {
     "build": "pnpm -r build",
-    "dev": "pnpm --filter @ai-chat-toolkit/widget dev",
+    "dev": "pnpm --filter ai-chat-toolkit-widget dev",
     "clean": "pnpm -r clean"
   },
   "engines": {
