@@ -56,6 +56,10 @@ export function getStyles(): string {
       align-items: flex-start;
     }
 
+    .root:has(.panel.open) .fab {
+      display: none;
+    }
+
     .fab {
       width: 56px;
       height: 56px;

@@ -134,6 +134,7 @@ export class AiChatElement extends HTMLElement {
   open(): void {
     this.#isOpen = true;
     this.#panel.classList.add("open");
+    this.#fab.hidden = true;
     this.#fab.setAttribute("aria-expanded", "true");
     requestAnimationFrame(() => this.#input.focus());
   }
@@ -141,6 +142,7 @@ export class AiChatElement extends HTMLElement {
   close(): void {
     this.#isOpen = false;
     this.#panel.classList.remove("open");
+    this.#fab.hidden = false;
     this.#fab.setAttribute("aria-expanded", "false");
   }
 
