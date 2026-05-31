@@ -60,7 +60,7 @@ aiChat.attach(app);
 app.listen(3000);
 ```
 
-See [packages/server/README.md](./packages/server/README.md) for providers, tools, and security notes.
+See [packages/server/README.md](./packages/server/README.md) for providers, tools, `systemPrompt`, and security notes.
 
 ## Widget install
 
@@ -112,6 +112,44 @@ ai-chat-toolkit/
 
 See [examples/README.md](./examples/README.md) for which example to use.
 
+## Full Stack Local Demo
+
+Pre-publish integration test that runs **`ai-chat-toolkit-widget`** and **`ai-chat-toolkit-server`** from the monorepo workspace (not published npm packages).
+
+| Layer | URL | Notes |
+|-------|-----|--------|
+| Frontend (Vite + React) | http://localhost:5173 | Open the chat bubble in the corner |
+| Backend (Express + Groq) | http://localhost:3333 | Port from `PORT` in `.env` (e.g. `3334`) |
+| Chat API | `POST /my-chat` | Use the widget — not the browser address bar |
+
+The Vite dev server proxies `/my-chat` to the backend so you avoid CORS during local development (`backend-url` is omitted on `<ai-chat>`).
+
+### Run it
+
+From the monorepo root:
+
+```bash
+pnpm install
+pnpm build
+cp examples/full-stack-local/.env.example examples/full-stack-local/.env
+# Edit .env: API_KEY and MODEL (Groq example)
+pnpm --filter full-stack-local-example dev
+```
+
+### Try the assistant
+
+Open http://localhost:5173 and use the chat widget. The demo registers mock tools:
+
+| Topic | Example prompts |
+|-------|-------------------|
+| **Products** | “List products in Electronics” |
+| **Orders** | “What is the status of order 1?” |
+| **Support docs** | “Find support articles about login” |
+
+Greetings and thanks (“Hi”, “thank you”) should get a direct reply without calling tools. Customize behavior in `examples/full-stack-local/server/index.ts` (`systemPrompt` and tool descriptions).
+
+Details: [examples/full-stack-local/README.md](./examples/full-stack-local/README.md).
+
 ## Scripts
 
 | Command | Description |
@@ -133,15 +171,6 @@ Packages are released **independently** via GitHub Actions (manual dispatch):
 Each workflow bumps only that package, creates a prefixed git tag (`widget-v*`, `server-v*`), and publishes to npm. Requires `NPM_TOKEN` in repo secrets.
 
 ### Examples
-
-**Full stack local (maintainers — workspace packages, Groq):**
-
-```bash
-pnpm build
-cp examples/full-stack-local/.env.example examples/full-stack-local/.env
-# add API_KEY and MODEL (Groq example)
-pnpm --filter full-stack-local-example dev
-```
 
 **React consumer (published npm widget):**
 

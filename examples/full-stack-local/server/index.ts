@@ -16,18 +16,29 @@ const aiChat = new AiChatServer({
     origin: "http://localhost:5173",
     credentials: true,
   },
-  systemPrompt:
-    "You are a helpful demo assistant. Use tools when needed. Keep answers concise.",
+  // Customize the assistant behavior for your application
+  systemPrompt: `You are a helpful demo assistant for this sample application. Keep answers concise and friendly.
+
+Answer directly without tools for greetings, thanks, small talk, and general knowledge.
+
+Use tools only for demo data in this app:
+- get_products — when the user wants products by category
+- get_order_status — when the user asks about order, shipment, or record status (pass their ID as orderId, e.g. "order 1" or "record 1" → orderId "1")
+- get_support_articles — when the user wants help articles or documentation`,
 });
 
 aiChat.addTools([
   {
     name: "get_products",
-    description: "Get product list by category",
+    description:
+      "List demo products in a category. Use when the user asks to browse or list products.",
     inputSchema: {
       type: "object",
       properties: {
-        category: { type: "string" },
+        category: {
+          type: "string",
+          description: "Category name, e.g. Electronics or general",
+        },
       },
       required: ["category"],
     },
@@ -42,11 +53,15 @@ aiChat.addTools([
   },
   {
     name: "get_order_status",
-    description: "Get order status by order ID",
+    description:
+      "Look up demo shipping status by order ID. Use for order status, shipment, delivery, or when the user gives an order/record number.",
     inputSchema: {
       type: "object",
       properties: {
-        orderId: { type: "string" },
+        orderId: {
+          type: "string",
+          description: "Order or record ID from the user, e.g. 1",
+        },
       },
       required: ["orderId"],
     },
@@ -62,11 +77,15 @@ aiChat.addTools([
   },
   {
     name: "get_support_articles",
-    description: "Search support articles by keyword",
+    description:
+      "Search demo support articles by keyword. Use when the user asks for help docs or troubleshooting guides.",
     inputSchema: {
       type: "object",
       properties: {
-        query: { type: "string" },
+        query: {
+          type: "string",
+          description: "Keywords from the user's question",
+        },
       },
       required: ["query"],
     },
