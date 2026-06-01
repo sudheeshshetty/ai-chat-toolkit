@@ -21,7 +21,6 @@ const aiChat = new AiChatServer({
   model: process.env.MODEL || "llama-3.3-70b-versatile",
   cors: {
     origin: "http://localhost:5173",
-    credentials: true,
   },
   // Customize the assistant behavior for your application
   systemPrompt: `You are a helpful demo assistant for this sample application. Keep answers concise and friendly.

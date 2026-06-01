@@ -15,7 +15,6 @@ export type SupportedProvider =
 
 export interface CorsOptions {
   origin?: string | string[] | boolean;
-  credentials?: boolean;
 }
 
 export interface AiChatServerOptions {
