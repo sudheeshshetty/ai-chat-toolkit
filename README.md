@@ -30,7 +30,7 @@ Express backend           ← ai-chat-toolkit-server
 ### 1. Add the widget (CDN)
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/ai-chat-toolkit-widget/dist/widget.global.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/ai-chat-toolkit-widget@1/dist/widget.global.js"></script>
 
 <ai-chat
   title="AI Assistant"
@@ -183,7 +183,9 @@ Packages are released independently via GitHub Actions (manual dispatch):
 | **Release ai-chat-toolkit-widget** | `packages/widget` | `ai-chat-toolkit-widget` |
 | **Release ai-chat-toolkit-server** | `packages/server` | `ai-chat-toolkit-server` |
 
-Each workflow bumps the version, creates a prefixed git tag (`widget-v*`, `server-v*`), and publishes to npm. Requires `NPM_TOKEN` in repo secrets.
+Each workflow creates a prefixed git tag (`widget-v*`, `server-v*`) and publishes to npm. Use **`current`** to publish the version in `package.json`; use **patch** / **minor** / **major** to bump first. Requires `NPM_TOKEN` in repo secrets.
+
+See [CHANGELOG.md](./CHANGELOG.md) for release notes.
 
 ---
 

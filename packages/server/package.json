@@ -1,6 +1,6 @@
 {
   "name": "ai-chat-toolkit-server",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Plug-and-play AI chat backend for Express with LLM providers and tool calling",
   "license": "MIT",
   "type": "module",

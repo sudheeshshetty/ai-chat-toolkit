@@ -1,6 +1,6 @@
 {
   "name": "ai-chat-toolkit-widget",
-  "version": "0.1.5",
+  "version": "1.0.0",
   "description": "Embeddable AI chat web component",
   "license": "MIT",
   "type": "module",
