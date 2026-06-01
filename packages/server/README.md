@@ -150,7 +150,7 @@ CORS middleware is applied **only** to the AI chat routes — not your entire Ex
 // Single origin
 cors: { origin: "http://localhost:5173" }
 
-// Multiple allowed origins
+// Multiple allowed origins (no credentials)
 cors: { origin: ["https://app.example.com", "https://admin.example.com"] }
 
 // Allow all origins — development only, not recommended for production
@@ -159,11 +159,11 @@ cors: { origin: true }
 // Disable CORS headers entirely
 cors: { origin: false }
 
-// With credentials (cookies / auth headers) — use an explicit origin, not `origin: true`
+// With credentials (cookies / Authorization headers)
 cors: { origin: "https://app.example.com", credentials: true }
 ```
 
-> **Note:** `credentials: true` requires a fixed origin string or allowlist array. `origin: true` is ignored when credentials are enabled.
+> **`credentials: true` requires a single string origin.** Passing an array or `true` alongside `credentials: true` will throw at server startup. This is intentional — a fixed origin is required to safely combine `Access-Control-Allow-Origin` with `Access-Control-Allow-Credentials`.
 
 ---
 

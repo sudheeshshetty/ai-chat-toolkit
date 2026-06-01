@@ -1,13 +1,8 @@
 import type { NextFunction, Request, Response } from "express";
 import type { CorsOptions } from "../types.js";
 
-/** Origins that must never be accepted (browser sends these for opaque/null origins). */
 const BLOCKED_ORIGINS = new Set(["null", "undefined"]);
 
-/**
- * Normalize an origin string to its canonical scheme+host+port form.
- * Returns null for anything that is not a safe http/https origin.
- */
 function normalizeOrigin(origin: string | undefined): string | null {
   if (!origin || BLOCKED_ORIGINS.has(origin)) {
     return null;
@@ -23,12 +18,108 @@ function normalizeOrigin(origin: string | undefined): string | null {
   }
 }
 
-export function createCorsMiddleware(options?: CorsOptions) {
+type Middleware = (req: Request, res: Response, next: NextFunction) => void;
+
+function applyCommonHeaders(res: Response): void {
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Accept");
+}
+
+/**
+ * Credentials path — returned when `credentials: true`.
+ *
+ * `Allow-Origin` is set to a value derived entirely from static server config
+ * (`staticOrigin`). This closure never reads `req.headers.origin` as the header
+ * value, so no user-controlled taint flows into `Allow-Origin` alongside
+ * `Allow-Credentials: true`. Satisfies CodeQL js/cors-misconfiguration-for-credentials.
+ */
+function buildCredentialsMiddleware(staticOrigin: string): Middleware {
+  return (req: Request, res: Response, next: NextFunction): void => {
+    res.setHeader("Access-Control-Allow-Origin", staticOrigin);
+    res.setHeader("Vary", "Origin");
+    res.setHeader("Access-Control-Allow-Credentials", "true");
+    applyCommonHeaders(res);
+    if (req.method === "OPTIONS") {
+      res.status(204).end();
+      return;
+    }
+    next();
+  };
+}
+
+/**
+ * No-credentials path — returned when `credentials` is not set.
+ *
+ * This closure never sets `Allow-Credentials: true`, so reflecting the request
+ * origin (for allowlist or wildcard) is safe per the CORS spec.
+ */
+function buildNoCorsMiddleware(
+  configuredOrigin: string | string[] | boolean | undefined,
+  allowedOrigins: string[],
+): Middleware {
+  return (req: Request, res: Response, next: NextFunction): void => {
+    let allowedOrigin: string | null = null;
+
+    if (configuredOrigin === false) {
+      allowedOrigin = null;
+    } else if (configuredOrigin === undefined || configuredOrigin === true) {
+      // Wildcard: never reflect req.headers.origin — use "*" to avoid taint.
+      allowedOrigin = "*";
+    } else if (typeof configuredOrigin === "string") {
+      // Static single origin from server config — not from request input.
+      allowedOrigin = allowedOrigins[0] ?? null;
+    } else if (Array.isArray(configuredOrigin)) {
+      // Iterate the static allowlist; `configured` is never derived from the request.
+      const normalizedRequest = normalizeOrigin(req.headers.origin);
+      for (const configured of allowedOrigins) {
+        if (configured === normalizedRequest) {
+          allowedOrigin = configured;
+          break;
+        }
+      }
+    }
+
+    if (allowedOrigin) {
+      res.setHeader("Access-Control-Allow-Origin", allowedOrigin);
+      if (allowedOrigin !== "*") {
+        res.setHeader("Vary", "Origin");
+      }
+    }
+
+    applyCommonHeaders(res);
+    if (req.method === "OPTIONS") {
+      res.status(204).end();
+      return;
+    }
+    next();
+  };
+}
+
+export function createCorsMiddleware(options?: CorsOptions): Middleware {
   const credentials = options?.credentials === true;
   const configuredOrigin = options?.origin;
 
-  // Pre-normalize the configured allowlist once at creation time.
-  // These are static, server-side values — never derived from request input.
+  if (credentials) {
+    // credentials: true requires a single, explicit string origin.
+    // An array or boolean wildcard with credentials is a misconfiguration.
+    if (typeof configuredOrigin !== "string") {
+      throw new Error(
+        "[ai-chat-toolkit-server] cors.credentials requires a single string origin. " +
+          'Example: cors: { origin: "https://your-app.com", credentials: true }',
+      );
+    }
+    const staticOrigin = normalizeOrigin(configuredOrigin);
+    if (!staticOrigin) {
+      throw new Error(
+        `[ai-chat-toolkit-server] cors.origin "${configuredOrigin}" is not a valid http/https URL.`,
+      );
+    }
+    // Return the credentials closure — completely separate from the no-credentials
+    // closure so CodeQL analyses each function independently.
+    return buildCredentialsMiddleware(staticOrigin);
+  }
+
+  // Pre-normalize the allowlist once at creation time (not per-request).
   const allowedOrigins: string[] = [];
   if (typeof configuredOrigin === "string") {
     const n = normalizeOrigin(configuredOrigin);
@@ -40,65 +131,5 @@ export function createCorsMiddleware(options?: CorsOptions) {
     }
   }
 
-  return (req: Request, res: Response, next: NextFunction): void => {
-    const requestOrigin = req.headers.origin;
-
-    if (credentials) {
-      // Iterate the static allowlist. `configured` is always a pre-computed
-      // server-side string — it never originates from request input.
-      // req.headers.origin is used ONLY for the boolean equality check;
-      // it never flows into the response header value.
-      const normalizedRequest = normalizeOrigin(requestOrigin);
-      for (const configured of allowedOrigins) {
-        if (configured === normalizedRequest) {
-          // `configured` comes from the static allowedOrigins array, NOT from the
-          // request — this breaks the taint chain CodeQL traces for credentials CORS.
-          res.setHeader("Access-Control-Allow-Origin", configured);
-          res.setHeader("Vary", "Origin");
-          res.setHeader("Access-Control-Allow-Credentials", "true");
-          break;
-        }
-      }
-    } else {
-      let allowedOrigin: string | null = null;
-
-      if (configuredOrigin === false) {
-        allowedOrigin = null;
-      } else if (configuredOrigin === undefined || configuredOrigin === true) {
-        // Wildcard — do NOT reflect req.headers.origin into the header value.
-        allowedOrigin = "*";
-      } else if (typeof configuredOrigin === "string") {
-        // Static single origin — derived from config, not from request.
-        allowedOrigin = normalizeOrigin(configuredOrigin);
-      } else if (Array.isArray(configuredOrigin)) {
-        // Same pattern: iterate static list, compare with request (boolean only),
-        // use the static `configured` value — never the request value.
-        const normalizedRequest = normalizeOrigin(requestOrigin);
-        for (const configured of allowedOrigins) {
-          if (configured === normalizedRequest) {
-            allowedOrigin = configured;
-            break;
-          }
-        }
-      }
-
-      if (allowedOrigin) {
-        res.setHeader("Access-Control-Allow-Origin", allowedOrigin);
-        // Vary is only meaningful when the value differs per request (not for "*").
-        if (allowedOrigin !== "*") {
-          res.setHeader("Vary", "Origin");
-        }
-      }
-    }
-
-    res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-    res.setHeader("Access-Control-Allow-Headers", "Content-Type, Accept");
-
-    if (req.method === "OPTIONS") {
-      res.status(204).end();
-      return;
-    }
-
-    next();
-  };
+  return buildNoCorsMiddleware(configuredOrigin, allowedOrigins);
 }
