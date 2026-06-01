@@ -5,8 +5,8 @@ import type { CorsOptions } from "../types.js";
 const BLOCKED_ORIGINS = new Set(["null", "undefined"]);
 
 /**
- * Normalize an origin string to its canonical form (scheme + host + port).
- * Returns null if the value is not a safe http/https origin.
+ * Normalize an origin string to its canonical scheme+host+port form.
+ * Returns null for anything that is not a safe http/https origin.
  */
 function normalizeOrigin(origin: string | undefined): string | null {
   if (!origin || BLOCKED_ORIGINS.has(origin)) {
@@ -27,23 +27,16 @@ export function createCorsMiddleware(options?: CorsOptions) {
   const credentials = options?.credentials === true;
   const configuredOrigin = options?.origin;
 
-  // Pre-compute the allowlist at middleware-creation time (not per-request).
-  // Values come entirely from static server config — never from request input.
-  // Using Map.get() at request time returns these static values, which prevents
-  // user-controlled taint from flowing into Access-Control-Allow-Origin headers
-  // (satisfies CodeQL js/cors-misconfiguration-for-credentials).
-  const allowedOriginMap = new Map<string, string>();
+  // Pre-normalize the configured allowlist once at creation time.
+  // These are static, server-side values — never derived from request input.
+  const allowedOrigins: string[] = [];
   if (typeof configuredOrigin === "string") {
-    const normalized = normalizeOrigin(configuredOrigin);
-    if (normalized) {
-      allowedOriginMap.set(normalized, normalized);
-    }
+    const n = normalizeOrigin(configuredOrigin);
+    if (n) allowedOrigins.push(n);
   } else if (Array.isArray(configuredOrigin)) {
     for (const o of configuredOrigin) {
-      const normalized = normalizeOrigin(o);
-      if (normalized) {
-        allowedOriginMap.set(normalized, normalized);
-      }
+      const n = normalizeOrigin(o);
+      if (n) allowedOrigins.push(n);
     }
   }
 
@@ -51,44 +44,47 @@ export function createCorsMiddleware(options?: CorsOptions) {
     const requestOrigin = req.headers.origin;
 
     if (credentials) {
-      // Credentials require an explicit origin allowlist (not origin: true).
-      // Look up the request origin in the pre-built static map.
-      // The value returned by Map.get() is a pre-computed static string —
-      // it is never the raw request origin — so it is safe to use with credentials.
+      // Iterate the static allowlist. `configured` is always a pre-computed
+      // server-side string — it never originates from request input.
+      // req.headers.origin is used ONLY for the boolean equality check;
+      // it never flows into the response header value.
       const normalizedRequest = normalizeOrigin(requestOrigin);
-      const matched = normalizedRequest
-        ? (allowedOriginMap.get(normalizedRequest) ?? null)
-        : null;
-
-      if (matched !== null) {
-        res.setHeader("Access-Control-Allow-Origin", matched);
-        res.setHeader("Vary", "Origin");
-        res.setHeader("Access-Control-Allow-Credentials", "true");
+      for (const configured of allowedOrigins) {
+        if (configured === normalizedRequest) {
+          // `configured` comes from the static allowedOrigins array, NOT from the
+          // request — this breaks the taint chain CodeQL traces for credentials CORS.
+          res.setHeader("Access-Control-Allow-Origin", configured);
+          res.setHeader("Vary", "Origin");
+          res.setHeader("Access-Control-Allow-Credentials", "true");
+          break;
+        }
       }
     } else {
       let allowedOrigin: string | null = null;
 
       if (configuredOrigin === false) {
-        // CORS disabled — set no Allow-Origin header.
         allowedOrigin = null;
       } else if (configuredOrigin === undefined || configuredOrigin === true) {
-        // Allow all origins: use the "*" wildcard.
-        // Do NOT reflect req.headers.origin — using "*" avoids writing
-        // user-controlled input into the response header.
+        // Wildcard — do NOT reflect req.headers.origin into the header value.
         allowedOrigin = "*";
       } else if (typeof configuredOrigin === "string") {
+        // Static single origin — derived from config, not from request.
         allowedOrigin = normalizeOrigin(configuredOrigin);
       } else if (Array.isArray(configuredOrigin)) {
-        // Same pre-built static map — Map.get() returns a static config value.
+        // Same pattern: iterate static list, compare with request (boolean only),
+        // use the static `configured` value — never the request value.
         const normalizedRequest = normalizeOrigin(requestOrigin);
-        allowedOrigin = normalizedRequest
-          ? (allowedOriginMap.get(normalizedRequest) ?? null)
-          : null;
+        for (const configured of allowedOrigins) {
+          if (configured === normalizedRequest) {
+            allowedOrigin = configured;
+            break;
+          }
+        }
       }
 
       if (allowedOrigin) {
         res.setHeader("Access-Control-Allow-Origin", allowedOrigin);
-        // Vary is only meaningful when the response differs by origin (not for "*").
+        // Vary is only meaningful when the value differs per request (not for "*").
         if (allowedOrigin !== "*") {
           res.setHeader("Vary", "Origin");
         }
