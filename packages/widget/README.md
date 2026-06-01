@@ -1,6 +1,10 @@
 # ai-chat-toolkit-widget
 
+[![npm version](https://img.shields.io/npm/v/ai-chat-toolkit-widget)](https://www.npmjs.com/package/ai-chat-toolkit-widget/v/1.0.0)
+
 Embeddable AI chat widget for any website or app. Drop it in with a `<script>` tag or import it as an npm package — no framework required.
+
+**Current release:** [1.0.0](https://www.npmjs.com/package/ai-chat-toolkit-widget/v/1.0.0) on npm.
 
 Built with vanilla Web Components and Shadow DOM, so it works in React, Vue, plain HTML, or anything else without conflicts.
 
@@ -11,7 +15,7 @@ Built with vanilla Web Components and Shadow DOM, so it works in React, Vue, pla
 ### CDN (easiest)
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/ai-chat-toolkit-widget/dist/widget.global.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/ai-chat-toolkit-widget@1.0.0/dist/widget.global.js"></script>
 
 <ai-chat
   title="AI Assistant"
@@ -26,7 +30,7 @@ The script auto-registers the `<ai-chat>` custom element when it loads.
 ### npm
 
 ```bash
-npm install ai-chat-toolkit-widget
+npm install ai-chat-toolkit-widget@^1.0.0
 ```
 
 ```ts

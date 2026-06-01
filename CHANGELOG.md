@@ -26,4 +26,6 @@ First stable release of both packages. From this version onward:
 - Credentials-safe CORS (explicit origin allowlist when `credentials: true`)
 - Optional `systemPrompt`, `maxToolRounds`, and custom chat path
 
+**GitHub tags:** [widget-v1.0.0](https://github.com/sudheeshshetty/ai-chat-toolkit/releases/tag/widget-v1.0.0) · [server-v1.0.0](https://github.com/sudheeshshetty/ai-chat-toolkit/releases/tag/server-v1.0.0)
+
 [1.0.0]: https://github.com/sudheeshshetty/ai-chat-toolkit/releases/tag/widget-v1.0.0

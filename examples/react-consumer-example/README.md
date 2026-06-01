@@ -1,8 +1,8 @@
 # React Consumer Example
 
-Official sample showing how to use [`ai-chat-toolkit-widget`](https://www.npmjs.com/package/ai-chat-toolkit-widget) in a React + TypeScript project.
+Official sample showing how to use [`ai-chat-toolkit-widget@1.0.0`](https://www.npmjs.com/package/ai-chat-toolkit-widget/v/1.0.0) in a React + TypeScript project.
 
-This example **installs the widget from the public npm registry** — the same way a real consumer app would. It does not use workspace linking. You can copy this folder outside the monorepo and run it standalone.
+This example **installs the widget from the public npm registry** (`^1.0.0`) — the same way a real consumer app would. It does not use workspace linking. You can copy this folder outside the monorepo and run it standalone.
 
 ---
 
@@ -31,7 +31,7 @@ Open http://localhost:5173, click the chat bubble, and send a message. The widge
 ### 1. Install
 
 ```bash
-npm install ai-chat-toolkit-widget
+npm install ai-chat-toolkit-widget@^1.0.0
 ```
 
 ### 2. Register the custom element

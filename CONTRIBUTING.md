@@ -30,6 +30,6 @@ Packages are released manually through GitHub Actions:
 - **Release ai-chat-toolkit-widget**
 - **Release ai-chat-toolkit-server**
 
-Choose **`current`** to publish the version already in `package.json` (e.g. after a `1.0.0` bump in the repo). Use **patch** / **minor** / **major** to bump before publish.
+Choose **`current`** to publish the version already in `package.json`. Use **patch** / **minor** / **major** to bump before publish (e.g. `1.0.1` patch, `1.1.0` minor, `2.0.0` major after the **1.0.0** stable line).
 
 See the root [README](./README.md#publishing) and [CHANGELOG](./CHANGELOG.md) for details.
