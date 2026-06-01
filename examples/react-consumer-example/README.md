@@ -1,41 +1,52 @@
 # React Consumer Example
 
-Official sample application showing how to use [`ai-chat-toolkit-widget`](https://www.npmjs.com/package/ai-chat-toolkit-widget) in a React + TypeScript project.
+Official sample showing how to use [`ai-chat-toolkit-widget`](https://www.npmjs.com/package/ai-chat-toolkit-widget) in a React + TypeScript project.
 
-This example **installs the widget from the public npm registry** — the same way a real consumer app would. It does not import the local monorepo package or use `workspace:*` linking.
+This example **installs the widget from the public npm registry** — the same way a real consumer app would. It does not use workspace linking. You can copy this folder outside the monorepo and run it standalone.
 
-> **Note for monorepo contributors:** Other packages in the main `ai-chat-toolkit` repo may use pnpm workspace linking during development. This example is **excluded from the pnpm workspace** and intentionally depends on the **published npm package** so it mirrors real-world usage. You can copy this folder outside the monorepo and run it standalone with `npm install` and `npm run dev`.
+---
 
-## Installation
-
-```bash
-npm install ai-chat-toolkit-widget
-```
-
-This example already lists that dependency in `package.json`. From this directory:
+## Quick start
 
 ```bash
 npm install
 npm run dev
 ```
 
-No monorepo build step is required.
+This starts two things:
 
-## React Usage
+| Service | URL |
+|---------|-----|
+| React app (Vite) | http://localhost:5173 |
+| Mock backend (Express) | http://localhost:3030 |
 
-### 1. Register the custom element
+Open http://localhost:5173, click the chat bubble, and send a message. The widget proxies requests through Vite to the mock backend — no CORS setup needed.
 
-Import the package once (typically in `main.tsx`):
+> **Note:** Run `npm run dev` (not just `npm start`). The script starts both the Vite dev server and the mock backend concurrently.
+
+---
+
+## Using the widget in React
+
+### 1. Install
+
+```bash
+npm install ai-chat-toolkit-widget
+```
+
+### 2. Register the custom element
+
+Import once in `main.tsx`:
 
 ```tsx
 import "ai-chat-toolkit-widget";
 ```
 
-This calls `customElements.define("ai-chat", …)` automatically.
+This auto-registers the `<ai-chat>` custom element.
 
-### 2. Add TypeScript support
+### 3. Add TypeScript types
 
-Create `src/types/web-components.d.ts` so JSX recognizes `<ai-chat />`:
+Create `src/types/web-components.d.ts`:
 
 ```ts
 declare module "react" {
@@ -59,7 +70,7 @@ declare module "react" {
 }
 ```
 
-### 3. Use the widget in JSX
+### 4. Use in JSX
 
 ```tsx
 <ai-chat
@@ -70,95 +81,64 @@ declare module "react" {
 />
 ```
 
-Omit `backend-url` to use the same origin as the page (recommended — avoids CORS). This example proxies `/ai-chat/*` to the mock API on port 3000 via Vite.
-
-#### Basic usage
-
-```tsx
-import "ai-chat-toolkit-widget";
-
-<ai-chat />
-```
-
-#### Customized usage
-
-```tsx
-<ai-chat
-  title="Support Assistant"
-  subtitle="How can I help?"
-  logo="https://example.com/logo.png"
-  primary-color="#2563eb"
-  path="/ai-chat/custom"
-/>
-```
+Omit `backend-url` to use the same origin as the page (recommended during development — Vite proxies the requests).
 
 For a cross-origin API, set `backend-url="https://api.example.com"` and enable CORS on the server.
 
-## Available Properties
+---
 
-| Property        | Default                    | Description                          |
-|-----------------|----------------------------|--------------------------------------|
-| `title`         | `AI Assistant`             | Header title                         |
-| `subtitle`      | `How can I help you today?`| Header subtitle                      |
-| `logo`          | _(none)_                   | Logo URL for button and header       |
-| `primary-color` | `#2563eb`                  | Theme accent color                   |
-| `backend-url`   | `window.location.origin`   | API base URL                         |
-| `path`          | `/ai-chat/custom`          | Chat endpoint path                   |
-| `placeholder`   | `Type a message…`          | Input placeholder                    |
-| `position`      | `bottom-right`             | Widget corner placement              |
+## Widget attributes
 
-## Running the Sample Application
+| Attribute | Default | Description |
+|-----------|---------|-------------|
+| `title` | `AI Assistant` | Header title |
+| `subtitle` | `How can I help you today?` | Header subtitle |
+| `logo` | _(none)_ | Logo URL — falls back to chat icon if missing or fails to load |
+| `primary-color` | `#2563eb` | Theme accent color |
+| `backend-url` | `window.location.origin` | API base URL |
+| `path` | `/ai-chat/custom` | Chat endpoint path |
+| `placeholder` | `Type a message…` | Input placeholder |
+| `position` | `bottom-right` | Corner placement: `bottom-right`, `bottom-left`, `top-right`, `top-left` |
 
-From this directory (works inside or outside the monorepo):
+---
 
-```bash
-npm install
-npm run dev
-```
-
-This starts:
-
-| Service        | URL                        |
-|----------------|----------------------------|
-| React app      | http://localhost:5173      |
-| Mock backend   | http://localhost:3000 (proxied via `/ai-chat/*`) |
-
-Open the app, click the chat button, and send a message. Chat requests go to the same origin (`/ai-chat/custom`) so no CORS setup is needed during development.
-
-Other scripts:
+## Available scripts
 
 ```bash
-npm run build    # Production build
-npm run preview  # Preview production build
+npm run dev          # Start Vite + mock backend together
+npm run dev:web      # Vite dev server only (port 5173)
+npm run dev:server   # Mock backend only (port 3030)
+npm run build        # Production build
+npm run preview      # Preview production build
 ```
 
-## Running the Demo Backend
+---
 
-The mock server lives in `server/index.js`:
+## The mock backend
+
+`server/index.js` is a minimal Express server that echoes messages back:
 
 ```js
 app.post("/ai-chat/custom", (req, res) => {
+  const { message } = req.body ?? {};
   res.json({
-    message: "Hello from the demo backend",
+    message: message
+      ? `Hello from the demo backend! You said: "${message}"`
+      : "Hello from the demo backend",
   });
 });
 ```
 
-Run it standalone:
+Replace this with a real backend using [`ai-chat-toolkit-server`](https://www.npmjs.com/package/ai-chat-toolkit-server) when you're ready.
 
-```bash
-node server/index.js
-```
+---
 
-Ensure `backend-url` on `<ai-chat>` matches the server address (default `http://localhost:3000`).
-
-## Folder Structure
+## Project structure
 
 ```
 react-consumer-example/
-├── public/
 ├── server/
-│   └── index.js          # Mock Express backend
+│   └── index.js          # Mock Express backend (port 3030)
 ├── src/
 │   ├── components/       # Header, cards, docs, footer
 │   ├── types/
@@ -168,11 +148,10 @@ react-consumer-example/
 │   └── index.css
 ├── index.html
 ├── package.json
-├── package-lock.json
-├── vite.config.ts
-├── tsconfig.json
-└── README.md
+└── vite.config.ts        # Proxies /ai-chat/* → localhost:3030
 ```
+
+---
 
 ## License
 

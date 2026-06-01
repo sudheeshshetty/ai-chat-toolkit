@@ -1,8 +1,10 @@
 # ai-chat-toolkit-server
 
-Plug-and-play AI chat backend for Express apps with LLM provider support and MCP-style tool calling.
+Plug-and-play AI chat backend for Express apps. Connect any LLM provider and register custom tools — the widget handles the UI, this handles the intelligence.
 
-Works with the [`ai-chat-toolkit-widget`](https://www.npmjs.com/package/ai-chat-toolkit-widget) frontend or any client that follows the chat API contract.
+Works with [`ai-chat-toolkit-widget`](https://www.npmjs.com/package/ai-chat-toolkit-widget) or any client that follows the [chat API contract](#api-contract).
+
+---
 
 ## Install
 
@@ -10,7 +12,9 @@ Works with the [`ai-chat-toolkit-widget`](https://www.npmjs.com/package/ai-chat-
 npm install ai-chat-toolkit-server express
 ```
 
-## Basic Usage
+---
+
+## Quick start
 
 ```ts
 import express from "express";
@@ -19,46 +23,48 @@ import { AiChatServer } from "ai-chat-toolkit-server";
 const app = express();
 
 const aiChat = new AiChatServer({
-  path: "/ai-chat/custom",
   provider: "groq",
   apiKey: process.env.API_KEY,
-  model: process.env.MODEL ?? "llama-3.3-70b-versatile",
-  cors: {
-    origin: "http://localhost:5173",
-  },
+  model: "llama-3.3-70b-versatile",
+  cors: { origin: "http://localhost:5173" },
 });
 
 aiChat.attach(app);
-
-app.listen(3000);
+app.listen(3000, () => console.log("Listening on http://localhost:3000"));
 ```
 
-## OpenAI Usage
+That's it. The server now accepts `POST /ai-chat/custom` and responds to chat messages.
+
+---
+
+## Providers
+
+### Groq
 
 ```ts
-const aiChat = new AiChatServer({
+new AiChatServer({
+  provider: "groq",
+  apiKey: process.env.GROQ_API_KEY,
+  model: "llama-3.3-70b-versatile",
+});
+```
+
+Groq uses the OpenAI-compatible format internally with `https://api.groq.com/openai/v1`. Supports tool calling.
+
+### OpenAI
+
+```ts
+new AiChatServer({
   provider: "openai-compatible",
   apiKey: process.env.OPENAI_API_KEY,
   model: "gpt-4o-mini",
 });
 ```
 
-## Groq Usage
+### OpenRouter (or any OpenAI-compatible API)
 
 ```ts
-const aiChat = new AiChatServer({
-  provider: "groq",
-  apiKey: process.env.API_KEY,
-  model: process.env.MODEL ?? "llama-3.3-70b-versatile",
-});
-```
-
-Groq uses the OpenAI-compatible provider internally with `https://api.groq.com/openai/v1`.
-
-## OpenRouter Usage
-
-```ts
-const aiChat = new AiChatServer({
+new AiChatServer({
   provider: "openai-compatible",
   apiKey: process.env.OPENROUTER_API_KEY,
   model: "deepseek/deepseek-r1:free",
@@ -66,97 +72,130 @@ const aiChat = new AiChatServer({
 });
 ```
 
-## Gemini Usage
+### Gemini
 
 ```ts
-const aiChat = new AiChatServer({
+new AiChatServer({
   provider: "gemini",
   apiKey: process.env.GEMINI_API_KEY,
   model: "gemini-1.5-flash",
 });
 ```
 
-> **Note:** Gemini tool calling is not implemented yet (chat only).
+> Tool calling is not yet implemented for Gemini (chat only).
 
-## Ollama Usage
+### Ollama (local models)
 
 ```ts
-const aiChat = new AiChatServer({
+new AiChatServer({
   provider: "ollama",
   model: "llama3.1",
-  baseUrl: "http://localhost:11434",
+  baseUrl: "http://localhost:11434", // default
 });
 ```
 
-> **Note:** Ollama tool calling is not implemented yet (chat only).
+> Tool calling is not yet implemented for Ollama (chat only). No API key required.
 
-## Tool Registration
+---
+
+## Tool registration
+
+Register tools the LLM can call during a conversation. Tools run **only on the server** — never exposed to the browser.
 
 ```ts
 aiChat.addTools([
   {
     name: "get_products",
-    description: "Get products by category",
+    description: "Get products by category. Use when the user asks to browse or list products.",
     inputSchema: {
       type: "object",
       properties: {
-        category: { type: "string" },
+        category: { type: "string", description: "Category name, e.g. Electronics" },
       },
       required: ["category"],
     },
     handler: async ({ category }, context) => {
+      // context.request gives you the Express Request for auth checks
       return [{ id: "p1", name: "Demo Product", category }];
     },
   },
 ]);
 ```
 
-Tools run **only on the server**. The LLM may call them during a chat turn (up to `maxToolRounds`, default `3`).
+The LLM decides when to call a tool. Up to `maxToolRounds` tool-call loops happen per request (default: `3`). The final text reply is returned to the widget.
 
-## CORS Configuration
+---
+
+## System prompt
+
+Shape the assistant's personality and behavior:
 
 ```ts
-cors: {
-  origin: "http://localhost:5173",
-  credentials: true,
-}
+new AiChatServer({
+  provider: "groq",
+  apiKey: process.env.API_KEY,
+  model: "llama-3.3-70b-versatile",
+  systemPrompt: `You are a helpful support assistant for Acme Corp.
+Keep answers concise and friendly. Only call tools when the user asks for specific data.`,
+});
 ```
 
-CORS middleware applies **only** to AI chat routes (`POST` chat path, `GET /ai-chat/health`, `GET /ai-chat/tools`), not your entire Express app.
+---
+
+## CORS configuration
+
+CORS middleware is applied **only** to the AI chat routes — not your entire Express app.
+
+```ts
+// Single origin
+cors: { origin: "http://localhost:5173" }
+
+// Multiple allowed origins
+cors: { origin: ["https://app.example.com", "https://admin.example.com"] }
+
+// Allow all origins — development only, not recommended for production
+cors: { origin: true }
+
+// Disable CORS headers entirely
+cors: { origin: false }
+
+// With credentials (cookies / auth headers)
+cors: { origin: "https://app.example.com", credentials: true }
+```
+
+---
 
 ## Routes
 
-When you call `aiChat.attach(app)`:
+Calling `aiChat.attach(app)` registers these routes:
 
 | Method | Path | Description |
 |--------|------|-------------|
-| POST | `{path}` (default `/ai-chat/custom`) | Chat |
-| GET | `/ai-chat/health` | Health check |
-| GET | `/ai-chat/tools` | List registered tools |
+| `POST` | `{path}` (default `/ai-chat/custom`) | Send a chat message |
+| `GET` | `/ai-chat/health` | Health check |
+| `GET` | `/ai-chat/tools` | List registered tools |
 
-## Widget Integration
+Change the chat path:
 
-```html
-<script src="https://cdn.jsdelivr.net/npm/ai-chat-toolkit-widget/dist/widget.global.js"></script>
-
-<ai-chat
-  title="AI Assistant"
-  subtitle="Ask me anything"
-  backend-url="http://localhost:3000"
-  path="/ai-chat/custom"
-></ai-chat>
+```ts
+new AiChatServer({
+  path: "/my-chat",
+  // ...
+});
 ```
 
-## API Contract
+---
+
+## API contract
 
 **Request** `POST {path}`
 
 ```json
 {
-  "message": "Hello",
+  "message": "What products do you have?",
   "history": [
     { "role": "user", "content": "Hi" },
-    { "role": "assistant", "content": "Hello" }
+    { "role": "assistant", "content": "Hello! How can I help?" }
   ]
 }
 ```
@@ -164,61 +203,52 @@ When you call `aiChat.attach(app)`:
 **Response**
 
 ```json
-{
-  "message": "Final assistant response"
-}
+{ "message": "Here are our products..." }
 ```
 
-**Health** `GET /ai-chat/health`
+**Error response**
 
 ```json
-{
-  "status": "ok",
-  "package": "ai-chat-toolkit-server"
-}
+{ "error": "Message cannot be empty." }
 ```
 
-**Tools** `GET /ai-chat/tools`
+---
 
-```json
-{
-  "tools": [
-    { "name": "get_products", "description": "Get products by category" }
-  ]
-}
-```
-
-## Options
+## All options
 
 | Option | Default | Description |
 |--------|---------|-------------|
-| `path` | `/ai-chat/custom` | Chat POST path |
-| `provider` | — | `openai-compatible`, `groq`, `gemini`, `ollama` |
+| `provider` | — | `"groq"`, `"openai-compatible"`, `"gemini"`, `"ollama"` |
 | `apiKey` | — | Provider API key (not required for Ollama) |
-| `model` | — | Model name |
-| `baseUrl` | Provider default | API base URL |
-| `systemPrompt` | — | Optional system message |
+| `model` | — | Model name (e.g. `"llama-3.3-70b-versatile"`) |
+| `baseUrl` | Provider default | Override the provider's API base URL |
+| `path` | `/ai-chat/custom` | Chat endpoint path |
+| `systemPrompt` | — | System message sent to the LLM on every request |
 | `maxToolRounds` | `3` | Max tool-call loops per request |
-| `cors` | — | CORS for chat routes only |
+| `cors` | — | CORS config (see above) |
 
-## Security Notes
+---
 
-- **Never expose API keys in the frontend.** Keys stay on the server.
-- **Tools run only on the backend.** Use `context.request` for auth inside handlers.
-- **Validate permissions** before executing sensitive tools.
-- **Write operations** should use `requiresConfirmation: true` (returns an error to the model until confirmation flow is implemented).
-- **Do not expose unrestricted database tools** to the model.
-- **Restrict CORS origins** in production.
+## Security notes
+
+- **Keep API keys on the server.** Never send them to the browser.
+- **Tools run server-side only.** Use `context.request` inside handlers for auth checks.
+- **Restrict CORS origins in production.** Use `origin: "https://yourapp.com"` not `origin: true`.
+- **Use `requiresConfirmation: true`** for any tool that writes data — the LLM will not be able to call it until a confirmation flow is implemented.
+- **Do not expose unrestricted database access** as a tool.
+
+---
 
 ## Roadmap
 
-- Streaming responses
-- Tool confirmation flow
-- Claude support
-- Bedrock support
-- Gemini tool calling
-- Ollama tool calling
-- Fastify / NestJS adapters
+- [ ] Streaming responses
+- [ ] Tool confirmation flow
+- [ ] Claude / Bedrock support
+- [ ] Gemini tool calling
+- [ ] Ollama tool calling
+- [ ] Fastify / NestJS adapters
+
+---
 
 ## License
 

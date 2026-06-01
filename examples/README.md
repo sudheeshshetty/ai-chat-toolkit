@@ -1,13 +1,15 @@
 # Examples
 
-| Folder | Purpose | Packages |
-|--------|---------|----------|
-| [static-html](./static-html/) | CDN / script tag widget demo | Built `widget.global.js` from monorepo |
-| [react-consumer-example](./react-consumer-example/) | React app like a real npm consumer | **Published** `ai-chat-toolkit-widget` from registry |
-| [full-stack-local](./full-stack-local/) | **Maintainers only** — test widget + server before publish | **Workspace** `ai-chat-toolkit-widget` + `ai-chat-toolkit-server` |
+Three standalone examples showing how to use the published npm packages. Each runs independently — no monorepo build step required.
 
-You do **not** need multiple React or server demos. Use:
+| Folder | What it shows | Packages used |
+|--------|---------------|---------------|
+| [static-html](./static-html/) | Drop the widget into any HTML page via CDN | `ai-chat-toolkit-widget` (CDN) |
+| [react-consumer-example](./react-consumer-example/) | Use the widget in a React + TypeScript app | `ai-chat-toolkit-widget` (npm) |
+| [full-stack-local](./full-stack-local/) | Widget + server + tools working together | `ai-chat-toolkit-widget` + `ai-chat-toolkit-server` (npm) |
 
-- **static-html** — vanilla + CDN
-- **react-consumer-example** — React + published widget
-- **full-stack-local** — optional local integration test (Groq + tools)
+## Which example should I use?
+
+- **No framework, just HTML?** → `static-html`
+- **Building a React app?** → `react-consumer-example`
+- **Need the full picture — widget, backend, and tools?** → `full-stack-local`

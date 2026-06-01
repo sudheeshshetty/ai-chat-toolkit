@@ -10,8 +10,8 @@
     "build": "tsc -b && vite build"
   },
   "dependencies": {
-    "ai-chat-toolkit-widget": "workspace:*",
-    "ai-chat-toolkit-server": "workspace:*",
+    "ai-chat-toolkit-widget": "^0.1.6",
+    "ai-chat-toolkit-server": "^0.1.1",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "express": "^5.1.0",

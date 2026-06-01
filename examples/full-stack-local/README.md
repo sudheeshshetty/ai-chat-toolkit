@@ -1,70 +1,75 @@
-# Full Stack Local Example
+# Full Stack Example
 
-End-to-end demo that wires **local workspace packages** together before publishing:
+Complete example showing `ai-chat-toolkit-widget` and `ai-chat-toolkit-server` working together with a real LLM provider and custom tools.
 
-- `packages/widget` → `ai-chat-toolkit-widget`
-- `packages/server` → `ai-chat-toolkit-server`
+Installs both packages from npm — the same way any production app would.
 
-This example does **not** use published npm versions. It is for monorepo integration testing only.
+---
 
 ## What it includes
 
-| Layer | Package | Port |
-|-------|---------|------|
-| React + Vite frontend | `ai-chat-toolkit-widget` (workspace) | http://localhost:5173 |
-| Express + Groq backend | `ai-chat-toolkit-server` (workspace) | http://localhost:3333 |
+| Layer | URL |
+|-------|-----|
+| React + Vite frontend | http://localhost:5173 |
+| Express + Groq backend | http://localhost:3334 |
+| Chat endpoint | `POST /my-chat` |
 
-**Chat endpoint:** `POST http://localhost:3333/my-chat`
+Demo tools registered on the backend: `get_products`, `get_order_status`, `get_support_articles`
 
-Mock tools: `get_products`, `get_order_status`, `get_support_articles`
+---
 
-## Setup
-
-From the monorepo root:
-
-```bash
-pnpm install
-pnpm build
-cp examples/full-stack-local/.env.example examples/full-stack-local/.env
-# Edit .env: set API_KEY and MODEL for your provider (default example uses Groq)
-pnpm --filter full-stack-local-example dev
-```
-
-Or from this directory:
+## Quick start
 
 ```bash
+npm install
 cp .env.example .env
-pnpm dev
+# Edit .env: fill in your API_KEY
+npm run dev
 ```
 
-## Environment
+Open http://localhost:5173 and click the chat bubble.
+
+---
+
+## Environment variables
 
 ```env
-API_KEY=              # API key for the configured provider
+API_KEY=              # Required — your LLM provider API key
 MODEL=llama-3.3-70b-versatile
-PORT=3333
+PORT=3334
 ```
 
-Change `provider` in `server/index.ts` to use OpenAI, Gemini, Ollama, etc., and set `API_KEY` / `MODEL` accordingly.
+Get a free Groq API key at [console.groq.com](https://console.groq.com). To switch providers, edit `server/index.ts` and update `API_KEY` and `MODEL` accordingly.
+
+---
 
 ## Scripts
 
 | Script | Description |
 |--------|-------------|
-| `pnpm dev` | Start backend + Vite frontend |
-| `pnpm dev:web` | Frontend only (port 5173) |
-| `pnpm dev:server` | Backend only (port 3333) |
-| `pnpm build` | Typecheck + production frontend build |
+| `npm run dev` | Start backend + Vite frontend (recommended) |
+| `npm run dev:web` | Frontend only (port 5173) |
+| `npm run dev:server` | Backend only (port 3334) |
+| `npm run build` | Production build |
 
-## Verify backend
+---
 
-```bash
-curl http://localhost:3333/
-curl http://localhost:3333/ai-chat/health
-curl http://localhost:3333/ai-chat/tools
-```
+## Try the assistant
 
-## Widget configuration
+Open http://localhost:5173 and use the chat widget:
+
+| Try asking… | What happens |
+|-------------|-------------|
+| "List products in Electronics" | Calls the `get_products` tool |
+| "What is the status of order 1?" | Calls the `get_order_status` tool |
+| "Find help articles about login" | Calls the `get_support_articles` tool |
+| "Hi" / "Thank you" | Direct reply — no tool call needed |
+
+---
+
+## How the widget connects to the backend
+
+The widget is configured with just a `path`:
 
 ```tsx
 <ai-chat
@@ -75,29 +80,48 @@ curl http://localhost:3333/ai-chat/tools
 />
 ```
 
-`backend-url` is omitted — the browser calls `http://localhost:5173/my-chat` and Vite proxies to the backend on port **3333** (no CORS issues).
+`backend-url` is omitted — the browser calls `http://localhost:5173/my-chat` and Vite proxies it to the backend on port 3334. No CORS configuration needed during development.
+
+---
+
+## Customizing the backend
+
+Open `server/index.ts` to change the provider, system prompt, or registered tools:
+
+```ts
+const aiChat = new AiChatServer({
+  provider: "groq",               // or "openai-compatible", "gemini", "ollama"
+  apiKey: process.env.API_KEY,
+  model: process.env.MODEL,
+  systemPrompt: "You are a helpful assistant for...",
+});
+```
+
+See the [ai-chat-toolkit-server docs](https://www.npmjs.com/package/ai-chat-toolkit-server) for all available options.
+
+---
 
 ## Troubleshooting
 
+**Server exits immediately with "API_KEY is not set"**
+
+Open `.env` and fill in your `API_KEY`. If you haven't created `.env` yet, run `cp .env.example .env` first.
+
 **Browser shows `Cannot GET /my-chat`**
 
-That is normal. The chat endpoint is **POST only** (the widget sends JSON). Opening `http://localhost:3334/my-chat` in the browser sends GET.
-
-- Use the app: http://localhost:5173 and the chat bubble
-- Or test with curl:
+The chat endpoint only accepts `POST` requests. Use the widget in the UI, or test with curl:
 
 ```bash
 curl -X POST http://localhost:3334/my-chat \
   -H "Content-Type: application/json" \
-  -d '{"message":"hello","history":[]}'
+  -d '{"message": "hello", "history": []}'
 ```
 
-**Chat shows a network/CORS error**
+**Chat shows a network error**
 
-1. Run **`pnpm dev`** (both server and web). `pnpm dev:web` alone will not start the API.
-2. `PORT` in `.env` must match — Vite proxies to that port (e.g. `3334`).
-3. Confirm backend: `curl http://localhost:3334/ai-chat/health`
-4. Check `API_KEY` and `MODEL` in `.env`
+Make sure you ran `npm run dev` (not just `npm run dev:web`) — the backend must be running for the widget to work.
+
+---
 
 ## License
 

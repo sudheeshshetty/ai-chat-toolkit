@@ -97,6 +97,8 @@ export class AiChatElement extends HTMLElement {
   #messagesEl!: HTMLDivElement;
   #input!: HTMLTextAreaElement;
   #sendBtn!: HTMLButtonElement;
+  #closeBtn!: HTMLButtonElement;
+  #composer!: HTMLFormElement;
   #headerLogo!: HTMLDivElement;
   #headerTitle!: HTMLSpanElement;
   #headerSubtitle!: HTMLSpanElement;
@@ -231,6 +233,8 @@ export class AiChatElement extends HTMLElement {
     this.#messagesEl = this.#shadow.querySelector(".messages")!;
     this.#input = this.#shadow.querySelector("textarea")!;
     this.#sendBtn = this.#shadow.querySelector(".send-btn")!;
+    this.#closeBtn = this.#shadow.querySelector(".close-btn")!;
+    this.#composer = this.#shadow.querySelector(".composer")!;
     this.#headerLogo = this.#shadow.querySelector(".header-logo")!;
     this.#headerTitle = this.#shadow.querySelector(".header-title")!;
     this.#headerSubtitle = this.#shadow.querySelector(".header-subtitle")!;
@@ -238,24 +242,16 @@ export class AiChatElement extends HTMLElement {
 
   #bindEvents(): void {
     this.#fab.addEventListener("click", this.#onFabClick);
-    this.#shadow
-      .querySelector(".close-btn")
-      ?.addEventListener("click", this.#onCloseClick);
-    this.#shadow
-      .querySelector(".composer")
-      ?.addEventListener("submit", this.#onSubmit);
+    this.#closeBtn.addEventListener("click", this.#onCloseClick);
+    this.#composer.addEventListener("submit", this.#onSubmit);
     this.#input.addEventListener("keydown", this.#onInputKeydown);
     this.#input.addEventListener("input", this.#resizeInput);
   }
 
   #unbindEvents(): void {
     this.#fab.removeEventListener("click", this.#onFabClick);
-    this.#shadow
-      .querySelector(".close-btn")
-      ?.removeEventListener("click", this.#onCloseClick);
-    this.#shadow
-      .querySelector(".composer")
-      ?.removeEventListener("submit", this.#onSubmit);
+    this.#closeBtn.removeEventListener("click", this.#onCloseClick);
+    this.#composer.removeEventListener("submit", this.#onSubmit);
     this.#input.removeEventListener("keydown", this.#onInputKeydown);
     this.#input.removeEventListener("input", this.#resizeInput);
   }
@@ -315,8 +311,19 @@ export class AiChatElement extends HTMLElement {
     this.#headerSubtitle.textContent = subtitle;
 
     if (logo) {
+      const img = document.createElement("img");
+      img.src = this.#escapeAttr(logo);
+      img.alt = "";
+      img.addEventListener(
+        "error",
+        () => {
+          this.#headerLogo.className = "header-logo placeholder";
+          this.#headerLogo.innerHTML = CHAT_ICON_SVG;
+        },
+        { once: true },
+      );
       this.#headerLogo.className = "header-logo";
-      this.#headerLogo.innerHTML = `<img src="${this.#escapeAttr(logo)}" alt="" />`;
+      this.#headerLogo.replaceChildren(img);
     } else {
       this.#headerLogo.className = "header-logo placeholder";
       this.#headerLogo.innerHTML = CHAT_ICON_SVG;
@@ -326,7 +333,17 @@ export class AiChatElement extends HTMLElement {
   #updateFab(): void {
     const { logo } = this.config;
     if (logo) {
-      this.#fab.innerHTML = `<img src="${this.#escapeAttr(logo)}" alt="" />`;
+      const img = document.createElement("img");
+      img.src = this.#escapeAttr(logo);
+      img.alt = "";
+      img.addEventListener(
+        "error",
+        () => {
+          this.#fab.innerHTML = CHAT_ICON_SVG;
+        },
+        { once: true },
+      );
+      this.#fab.replaceChildren(img);
     } else {
       this.#fab.innerHTML = CHAT_ICON_SVG;
     }
@@ -370,12 +387,13 @@ export class AiChatElement extends HTMLElement {
       return;
     }
 
+    this.#setLoading(true);
+
     const userMessage: ChatMessage = { role: "user", content: text };
     this.#messages.push(userMessage);
     this.#input.value = "";
     this.#resizeInput();
     this.#renderMessages();
-    this.#setLoading(true);
 
     try {
       const reply = await this.#fetchReply(text);

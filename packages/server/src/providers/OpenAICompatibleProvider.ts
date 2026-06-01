@@ -122,7 +122,9 @@ export class OpenAICompatibleProvider implements LLMProvider {
         unknown
       >;
     } catch {
-      args = {};
+      console.warn(
+        `[ai-chat-toolkit-server] Failed to parse tool arguments for "${call.function.name}". Raw: ${call.function.arguments}`,
+      );
     }
     return {
       id: call.id,

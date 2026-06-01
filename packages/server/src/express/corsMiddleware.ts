@@ -14,11 +14,8 @@ function normalizeOriginHeader(
   if (typeof origin === "string") {
     return origin;
   }
-  if (Array.isArray(origin) && requestOrigin && origin.includes(requestOrigin)) {
-    return requestOrigin;
-  }
-  if (Array.isArray(origin) && origin.length > 0) {
-    return origin[0];
+  if (Array.isArray(origin)) {
+    return requestOrigin && origin.includes(requestOrigin) ? requestOrigin : null;
   }
   return requestOrigin ?? null;
 }

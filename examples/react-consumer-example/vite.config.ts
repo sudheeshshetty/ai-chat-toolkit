@@ -7,7 +7,7 @@ export default defineConfig({
     port: 5173,
     proxy: {
       "/ai-chat": {
-        target: "http://localhost:3000",
+        target: "http://localhost:3030",
         changeOrigin: true,
       },
     },

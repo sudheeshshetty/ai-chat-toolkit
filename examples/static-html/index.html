@@ -41,24 +41,30 @@
     <main>
       <h1>AI Chat Widget Demo</h1>
       <p>
-        This page loads the locally built browser bundle from
-        <code>packages/widget/dist/widget.global.js</code>. Click the floating
-        button in the corner to open the chat panel.
+        The widget is loaded from the
+        <a href="https://www.jsdelivr.com/package/npm/ai-chat-toolkit-widget">jsDelivr CDN</a>
+        — no build step or npm install needed. Click the floating button in the
+        corner to open the chat panel.
       </p>
       <p>
-        <strong>Backend required:</strong> ensure a server is running that
-        accepts <code>POST /ai-chat/custom</code> on this origin (or set
-        <code>backend-url</code> and <code>path</code> on the element). The
-        widget sends JSON with <code>message</code> and <code>history</code>,
-        and expects <code>{ "message": "..." }</code> or
-        <code>{ "response": "..." }</code> in return.
+        <strong>Backend required:</strong> the widget sends
+        <code>POST /ai-chat/custom</code> to the same origin by default. Point
+        it at your server with <code>backend-url</code> and <code>path</code>
+        attributes. It expects <code>{ "message": "..." }</code> or
+        <code>{ "response": "..." }</code> in the response body.
+      </p>
+      <p>
+        See
+        <a href="https://www.npmjs.com/package/ai-chat-toolkit-server">ai-chat-toolkit-server</a>
+        for a ready-made Express backend that works with this widget.
       </p>
     </main>
 
-    <script src="https://cdn.jsdelivr.net/npm/ai-chat-toolkit-widget@0.1.1/dist/widget.global.js"></script>
+    <!-- Load the widget from CDN — no install required -->
+    <script src="https://cdn.jsdelivr.net/npm/ai-chat-toolkit-widget@0.1.6/dist/widget.global.js"></script>
 
     <ai-chat
-      title="WorkerHub Assistant"
+      title="AI Assistant"
       subtitle="How can I help today?"
       primary-color="#2563eb"
       placeholder="Ask me anything…"

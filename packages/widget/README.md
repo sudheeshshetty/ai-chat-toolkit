@@ -1,104 +1,161 @@
-# @ai-chat-toolkit/widget
+# ai-chat-toolkit-widget
 
-Embeddable AI chat web component for any website or app. Built with vanilla Web Components and Shadow DOM — no React or framework required.
+Embeddable AI chat widget for any website or app. Drop it in with a `<script>` tag or import it as an npm package — no framework required.
+
+Built with vanilla Web Components and Shadow DOM, so it works in React, Vue, plain HTML, or anything else without conflicts.
+
+---
 
 ## Install
 
-```bash
-npm install @ai-chat-toolkit/widget
-# or
-pnpm add @ai-chat-toolkit/widget
-```
-
-### CDN (browser)
+### CDN (easiest)
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/@ai-chat-toolkit/widget/dist/widget.global.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/ai-chat-toolkit-widget/dist/widget.global.js"></script>
 
 <ai-chat
-  title="WorkerHub Assistant"
-  subtitle="How can I help today?"
-  logo="/assets/logo.png"
-  primary-color="#2563eb"
+  title="AI Assistant"
+  subtitle="How can I help?"
   backend-url="https://api.example.com"
-  path="/my-chat"
+  path="/ai-chat/custom"
 ></ai-chat>
 ```
 
-The global bundle auto-registers the `<ai-chat>` custom element when the script loads.
+The script auto-registers the `<ai-chat>` custom element when it loads.
 
-### npm (ES modules)
+### npm
+
+```bash
+npm install ai-chat-toolkit-widget
+```
 
 ```ts
-import { AiChatElement, registerAiChatElement } from "@ai-chat-toolkit/widget";
-
-registerAiChatElement();
+import "ai-chat-toolkit-widget";
 ```
 
 ```html
 <ai-chat title="Support" backend-url="https://api.example.com"></ai-chat>
 ```
 
+---
+
 ## Attributes
 
-| Attribute        | Default              | Description |
-|------------------|----------------------|-------------|
-| `title`          | `AI Assistant`       | Header title |
-| `subtitle`       | `How can I help you today?` | Header subtitle |
-| `logo`           | _(none)_             | Image URL for FAB and header; falls back to chat icon |
-| `primary-color`  | `#2563eb`            | Accent color for header, FAB, and send button |
-| `backend-url`    | `window.location.origin` | API origin (no trailing slash) |
-| `path`           | `/ai-chat/custom`    | API path appended to `backend-url` |
-| `placeholder`    | `Type a message…`    | Input placeholder |
-| `position`       | `bottom-right`       | `bottom-right`, `bottom-left`, `top-right`, `top-left` |
+| Attribute | Default | Description |
+|-----------|---------|-------------|
+| `title` | `AI Assistant` | Header title |
+| `subtitle` | `How can I help you today?` | Header subtitle |
+| `logo` | _(none)_ | Image URL for the FAB button and header. Falls back to the default chat icon if the URL fails to load. |
+| `primary-color` | `#2563eb` | Accent color for the header, FAB button, and send button |
+| `backend-url` | `window.location.origin` | Base URL of your API server (no trailing slash) |
+| `path` | `/ai-chat/custom` | Endpoint path appended to `backend-url` |
+| `placeholder` | `Type a message…` | Textarea placeholder text |
+| `position` | `bottom-right` | Corner position: `bottom-right`, `bottom-left`, `top-right`, `top-left` |
+
+---
 
 ## Backend API
 
-**Endpoint:** `POST ${backendUrl}${path}`
+The widget sends a `POST` request to `${backend-url}${path}` on every message.
 
 **Request body:**
 
 ```json
 {
-  "message": "user message",
+  "message": "user message text",
   "history": [
-    { "role": "user", "content": "..." },
-    { "role": "assistant", "content": "..." }
+    { "role": "user", "content": "previous message" },
+    { "role": "assistant", "content": "previous reply" }
   ]
 }
 ```
 
-**Response** (either field is accepted):
+**Expected response** — either field is accepted:
 
 ```json
-{ "message": "assistant response" }
+{ "message": "assistant reply" }
 ```
 
 ```json
-{ "response": "assistant response" }
+{ "response": "assistant reply" }
 ```
 
-Non-2xx responses and network errors are shown as text in the chat.
+**Error handling:**
 
-If the API is on a different domain than the page, the API server must enable CORS. The widget cannot bypass that browser restriction.
+- Non-2xx responses display the error text inline in the chat (no popup).
+- Network failures and CORS errors also display inline with a descriptive message.
+- If the logo URL fails to load, the widget silently falls back to the default chat icon.
+
+If your API is on a different domain, enable CORS on the server. See [`ai-chat-toolkit-server`](https://www.npmjs.com/package/ai-chat-toolkit-server) for a ready-made backend.
+
+---
 
 ## Programmatic API
 
 ```ts
 const el = document.querySelector("ai-chat") as AiChatElement;
-el.open();
-el.close();
-el.toggle();
-el.clearHistory();
+
+el.open();         // Open the chat panel
+el.close();        // Close the chat panel
+el.toggle();       // Toggle open/closed
+el.clearHistory(); // Clear all messages
 ```
+
+---
+
+## React usage
+
+Import once in `main.tsx`:
+
+```tsx
+import "ai-chat-toolkit-widget";
+```
+
+Add TypeScript types in `src/types/web-components.d.ts`:
+
+```ts
+declare module "react" {
+  namespace JSX {
+    interface IntrinsicElements {
+      "ai-chat": React.DetailedHTMLProps<
+        React.HTMLAttributes<HTMLElement> & {
+          title?: string;
+          subtitle?: string;
+          logo?: string;
+          "primary-color"?: string;
+          "backend-url"?: string;
+          path?: string;
+          placeholder?: string;
+          position?: "bottom-right" | "bottom-left" | "top-right" | "top-left";
+        },
+        HTMLElement
+      >;
+    }
+  }
+}
+```
+
+Use in JSX:
+
+```tsx
+<ai-chat
+  title="Support"
+  primary-color="#2563eb"
+  path="/ai-chat/custom"
+/>
+```
+
+---
 
 ## Build outputs
 
 | File | Use case |
 |------|----------|
+| `dist/widget.global.js` | CDN / `<script>` tag |
 | `dist/index.js` | ESM import |
 | `dist/index.d.ts` | TypeScript types |
-| `dist/widget.global.js` | CDN / `<script>` tag |
+
+---
 
 ## Development
 
@@ -106,8 +163,10 @@ From the monorepo root:
 
 ```bash
 pnpm install
-pnpm --filter @ai-chat-toolkit/widget dev
+pnpm --filter ai-chat-toolkit-widget dev
 ```
+
+---
 
 ## License
 

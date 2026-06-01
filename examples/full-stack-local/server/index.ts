@@ -4,8 +4,15 @@ import { AiChatServer } from "ai-chat-toolkit-server";
 
 dotenv.config();
 
+if (!process.env.API_KEY?.trim()) {
+  console.error(
+    "Error: API_KEY is not set in .env — copy .env.example and fill in your key.",
+  );
+  process.exit(1);
+}
+
 const app = express();
-const PORT = Number(process.env.PORT) || 3333;
+const PORT = Number(process.env.PORT) || 3334;
 
 const aiChat = new AiChatServer({
   path: "/my-chat",

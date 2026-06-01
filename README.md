@@ -1,29 +1,33 @@
 # ai-chat-toolkit
 
-Open-source toolkit for embedding an AI-powered chat widget in any web app, with an optional Express backend for LLM providers and tool calling.
+Open-source toolkit for embedding an AI-powered chat widget in any web app, backed by your own Express server with LLM provider support and tool calling.
 
 ## Packages
 
-| Package | npm name | Description |
-|---------|----------|-------------|
-| Widget | `ai-chat-toolkit-widget` | Embeddable Web Component (Shadow DOM) |
-| Server | `ai-chat-toolkit-server` | Express backend with LLM providers + tools |
+| Package | npm | Description |
+|---------|-----|-------------|
+| [`ai-chat-toolkit-widget`](./packages/widget/) | [![npm](https://img.shields.io/npm/v/ai-chat-toolkit-widget)](https://www.npmjs.com/package/ai-chat-toolkit-widget) | Embeddable Web Component (Shadow DOM, no framework required) |
+| [`ai-chat-toolkit-server`](./packages/server/) | [![npm](https://img.shields.io/npm/v/ai-chat-toolkit-server)](https://www.npmjs.com/package/ai-chat-toolkit-server) | Express backend with LLM providers + tool calling |
 
 ```
-Frontend App
-    ↓
-<ai-chat> widget  (ai-chat-toolkit-widget)
-    ↓
-ai-chat-toolkit-server
-    ↓
-LLM Provider (OpenAI, Groq, Gemini, Ollama, …)
-    ↓
-Registered Tools
-    ↓
-Your APIs / DB / Services
+Your web app
+    │
+    ▼
+<ai-chat> widget          ← ai-chat-toolkit-widget
+    │  POST /ai-chat/custom
+    ▼
+Express backend           ← ai-chat-toolkit-server
+    │
+    ├── LLM Provider (OpenAI · Groq · Gemini · Ollama · …)
+    │
+    └── Your tools / APIs / database
 ```
 
-## Quick start (CDN widget)
+---
+
+## Quick start
+
+### 1. Add the widget (CDN)
 
 ```html
 <script src="https://cdn.jsdelivr.net/npm/ai-chat-toolkit-widget/dist/widget.global.js"></script>
@@ -36,7 +40,7 @@ Your APIs / DB / Services
 ></ai-chat>
 ```
 
-## Quick start (Express backend)
+### 2. Add the backend (Express)
 
 ```bash
 npm install ai-chat-toolkit-server express
@@ -49,43 +53,35 @@ import { AiChatServer } from "ai-chat-toolkit-server";
 const app = express();
 
 const aiChat = new AiChatServer({
-  path: "/ai-chat/custom",
   provider: "groq",
   apiKey: process.env.API_KEY,
-  model: process.env.MODEL ?? "llama-3.3-70b-versatile",
+  model: "llama-3.3-70b-versatile",
   cors: { origin: "http://localhost:5173" },
 });
 
 aiChat.attach(app);
-app.listen(3000);
+app.listen(3000, () => console.log("Listening on http://localhost:3000"));
 ```
 
-See [packages/server/README.md](./packages/server/README.md) for providers, tools, `systemPrompt`, and security notes.
+The server now accepts `POST /ai-chat/custom` and the widget is ready to chat.
 
-## Widget install
+See [packages/server/README.md](./packages/server/README.md) for providers, tools, `systemPrompt`, CORS options, and security notes.
 
-```bash
-npm install ai-chat-toolkit-widget
-```
-
-```ts
-import "ai-chat-toolkit-widget";
-```
-
-See [packages/widget/README.md](./packages/widget/README.md) for attributes and CDN usage.
+---
 
 ## Chat API contract
 
+The widget and server communicate over a simple JSON API:
+
 ```
-POST ${backendUrl}${path}
+POST ${backend-url}${path}
 Content-Type: application/json
 ```
 
 **Request:**
-
 ```json
 {
-  "message": "Hello",
+  "message": "What products do you have?",
   "history": [
     { "role": "user", "content": "Hi" },
     { "role": "assistant", "content": "Hello!" }
@@ -94,65 +90,80 @@ Content-Type: application/json
 ```
 
 **Response:**
-
 ```json
-{ "message": "Assistant reply" }
+{ "message": "Here are our products..." }
 ```
+
+Any backend that follows this contract works with the widget — you don't have to use `ai-chat-toolkit-server`.
+
+---
+
+## Full Stack Demo
+
+![Full Stack Demo — widget + server with tools](./docs/assets/demo-ai-chat-toolkit.gif)
+
+End-to-end example using both packages from npm — a React frontend with the chat widget connected to a Groq-powered Express backend with three demo tools.
+
+| Layer | URL |
+|-------|-----|
+| React + Vite frontend | http://localhost:5173 |
+| Express + Groq backend | http://localhost:3334 |
+| Chat endpoint | `POST /my-chat` |
+
+### Run it
+
+```bash
+cd examples/full-stack-local
+npm install
+cp .env.example .env
+# Edit .env: set API_KEY (get a free key at console.groq.com)
+npm run dev
+```
+
+Open http://localhost:5173 and try the chat widget.
+
+| Prompt | What it does |
+|--------|-------------|
+| "List products in Electronics" | Calls `get_products` tool |
+| "What is the status of order 1?" | Calls `get_order_status` tool |
+| "Find help articles about login" | Calls `get_support_articles` tool |
+
+Details: [examples/full-stack-local/README.md](./examples/full-stack-local/README.md)
+
+---
+
+## Examples
+
+All examples install from the published npm registry and run standalone.
+
+| Folder | What it shows |
+|--------|---------------|
+| [static-html](./examples/static-html/) | Widget via CDN `<script>` tag — no install needed |
+| [react-consumer-example](./examples/react-consumer-example/) | Widget in a React + TypeScript app |
+| [full-stack-local](./examples/full-stack-local/) | Widget + server + LLM tools working together |
+
+See [examples/README.md](./examples/README.md) for guidance on which to use.
+
+---
 
 ## Monorepo layout
 
 ```
 ai-chat-toolkit/
-  packages/widget/              # ai-chat-toolkit-widget
-  packages/server/              # ai-chat-toolkit-server
-  examples/static-html/         # CDN demo
-  examples/react-consumer-example/  # React + published npm widget
-  examples/full-stack-local/    # Optional: workspace widget + server (pre-publish)
+├── packages/
+│   ├── widget/                    # ai-chat-toolkit-widget (source)
+│   └── server/                    # ai-chat-toolkit-server (source)
+└── examples/
+    ├── static-html/               # CDN usage example
+    ├── react-consumer-example/    # React + npm widget example
+    └── full-stack-local/          # Widget + server + tools example
 ```
 
-See [examples/README.md](./examples/README.md) for which example to use.
+---
 
-## Full Stack Local Demo
+## Monorepo scripts
 
-![Full Stack Local Demo — widget + server running locally](./docs/assets/demo-ai-chat-toolkit.gif)
-
-Pre-publish integration test that runs **`ai-chat-toolkit-widget`** and **`ai-chat-toolkit-server`** from the monorepo workspace (not published npm packages).
-
-| Layer | URL | Notes |
-|-------|-----|--------|
-| Frontend (Vite + React) | http://localhost:5173 | Open the chat bubble in the corner |
-| Backend (Express + Groq) | http://localhost:3333 | Port from `PORT` in `.env` (e.g. `3334`) |
-| Chat API | `POST /my-chat` | Use the widget — not the browser address bar |
-
-The Vite dev server proxies `/my-chat` to the backend so you avoid CORS during local development (`backend-url` is omitted on `<ai-chat>`).
-
-### Run it
-
-From the monorepo root:
-
-```bash
-pnpm install
-pnpm build
-cp examples/full-stack-local/.env.example examples/full-stack-local/.env
-# Edit .env: API_KEY and MODEL (Groq example)
-pnpm --filter full-stack-local-example dev
-```
-
-### Try the assistant
-
-Open http://localhost:5173 and use the chat widget. The demo registers mock tools:
-
-| Topic | Example prompts |
-|-------|-------------------|
-| **Products** | “List products in Electronics” |
-| **Orders** | “What is the status of order 1?” |
-| **Support docs** | “Find support articles about login” |
-
-Greetings and thanks (“Hi”, “thank you”) should get a direct reply without calling tools. Customize behavior in `examples/full-stack-local/server/index.ts` (`systemPrompt` and tool descriptions).
-
-Details: [examples/full-stack-local/README.md](./examples/full-stack-local/README.md).
-
-## Scripts
+Examples under `examples/` use **`npm install`** and published packages. To work on package source, use **`pnpm`** from the repo root:
 
 | Command | Description |
 |---------|-------------|
@@ -161,26 +172,20 @@ Details: [examples/full-stack-local/README.md](./examples/full-stack-local/READM
 | `pnpm dev:widget` | Watch-build widget |
 | `pnpm dev:server` | Watch-build server |
 
-## Publishing to npm
+---
 
-Packages are released **independently** via GitHub Actions (manual dispatch):
+## Publishing
+
+Packages are released independently via GitHub Actions (manual dispatch):
 
 | Workflow | Package | npm name |
 |----------|---------|----------|
 | **Release ai-chat-toolkit-widget** | `packages/widget` | `ai-chat-toolkit-widget` |
 | **Release ai-chat-toolkit-server** | `packages/server` | `ai-chat-toolkit-server` |
 
-Each workflow bumps only that package, creates a prefixed git tag (`widget-v*`, `server-v*`), and publishes to npm. Requires `NPM_TOKEN` in repo secrets.
+Each workflow bumps the version, creates a prefixed git tag (`widget-v*`, `server-v*`), and publishes to npm. Requires `NPM_TOKEN` in repo secrets.
 
-### Examples
-
-**React consumer (published npm widget):**
-
-```bash
-cd examples/react-consumer-example
-npm install
-npm run dev
-```
+---
 
 ## Roadmap
 
@@ -188,7 +193,10 @@ npm run dev
 - [x] Server package with tool calling
 - [ ] Streaming responses
 - [ ] Gemini / Ollama tool calling
+- [ ] Claude / Bedrock support
 - [ ] Fastify / NestJS adapters
+
+---
 
 ## License
 

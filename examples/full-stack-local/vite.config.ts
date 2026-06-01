@@ -3,7 +3,7 @@ import { defineConfig, loadEnv } from "vite";
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), "");
-  const backendPort = env.PORT || "3333";
+  const backendPort = env.PORT || "3334";
   const backendUrl = `http://localhost:${backendPort}`;
 
   return {

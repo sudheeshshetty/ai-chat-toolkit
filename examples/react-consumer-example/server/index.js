@@ -38,7 +38,7 @@ server.on("listening", () => {
 server.on("error", (err) => {
   if (err.code === "EADDRINUSE") {
     console.error(`Port ${PORT} is already in use.`);
-    console.error("Stop the other process (lsof -i :3000) or use PORT=3001 pnpm run dev:server");
+    console.error(`Stop the other process or use: PORT=3031 node server/index.js`);
   } else {
     console.error("Failed to start demo backend:", err.message);
   }
