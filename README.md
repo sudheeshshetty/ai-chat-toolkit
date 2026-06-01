@@ -187,6 +187,16 @@ Each workflow bumps the version, creates a prefixed git tag (`widget-v*`, `serve
 
 ---
 
+## Development workflow
+
+- **PR required** — changes merge into `main` through pull requests.
+- **Build validation required** — the [CI workflow](.github/workflows/ci.yml) must pass (`build` check).
+- **Maintainer review required** — see [.github/CODEOWNERS](.github/CODEOWNERS).
+
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for setup and PR guidelines.
+
+---
+
 ## Roadmap
 
 - [x] Widget package

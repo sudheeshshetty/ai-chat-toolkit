@@ -5,7 +5,7 @@ const app = express();
 const PORT = Number(process.env.PORT) || 3030;
 
 const corsOptions = {
-  origin: true,
+  origin: "http://localhost:5173",
   methods: ["GET", "POST", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Accept"],
   maxAge: 86400,

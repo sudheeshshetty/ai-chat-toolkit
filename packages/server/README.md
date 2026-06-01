@@ -159,9 +159,11 @@ cors: { origin: true }
 // Disable CORS headers entirely
 cors: { origin: false }
 
-// With credentials (cookies / auth headers)
+// With credentials (cookies / auth headers) — use an explicit origin, not `origin: true`
 cors: { origin: "https://app.example.com", credentials: true }
 ```
+
+> **Note:** `credentials: true` requires a fixed origin string or allowlist array. `origin: true` is ignored when credentials are enabled.
 
 ---
 
