@@ -1,14 +1,17 @@
 import type { NextFunction, Request, Response } from "express";
 import type { CorsOptions } from "../types.js";
 
-/** Origins that must never be used with credentials (CodeQL / browser safety). */
-const BLOCKED_CREDENTIAL_ORIGINS = new Set(["null", "undefined"]);
+/** Origins that must never be accepted (browser sends these for opaque/null origins). */
+const BLOCKED_ORIGINS = new Set(["null", "undefined"]);
 
+/**
+ * Normalize an origin string to its canonical form (scheme + host + port).
+ * Returns null if the value is not a safe http/https origin.
+ */
 function normalizeOrigin(origin: string | undefined): string | null {
-  if (!origin || BLOCKED_CREDENTIAL_ORIGINS.has(origin)) {
+  if (!origin || BLOCKED_ORIGINS.has(origin)) {
     return null;
   }
-
   try {
     const parsed = new URL(origin);
     if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
@@ -20,105 +23,80 @@ function normalizeOrigin(origin: string | undefined): string | null {
   }
 }
 
-/**
- * When credentials are enabled, returns a value from the configured allowlist only
- * (never echoes the raw request Origin header).
- */
-function matchAllowlistedOrigin(
-  configured: string[] | undefined,
-  requestOrigin: string | undefined,
-): string | null {
-  const normalizedRequestOrigin = normalizeOrigin(requestOrigin);
-  if (!configured || !normalizedRequestOrigin) {
-    return null;
-  }
-
-  for (const allowed of configured) {
-    if (allowed === normalizedRequestOrigin) {
-      return allowed;
-    }
-  }
-
-  return null;
-}
-
-function resolveOriginWithoutCredentials(
-  origin: string | string[] | boolean | undefined,
-  requestOrigin: string | undefined,
-): string | null {
-  const normalizedRequestOrigin = normalizeOrigin(requestOrigin);
-
-  if (origin === false) {
-    return null;
-  }
-  if (origin === undefined || origin === true) {
-    return normalizedRequestOrigin ?? "*";
-  }
-  if (typeof origin === "string") {
-    return normalizeOrigin(origin);
-  }
-  if (Array.isArray(origin)) {
-    if (!normalizedRequestOrigin) {
-      return null;
-    }
-
-    for (const allowed of origin) {
-      const normalizedAllowed = normalizeOrigin(allowed);
-      if (normalizedAllowed === normalizedRequestOrigin) {
-        return normalizedAllowed;
-      }
-    }
-
-    return null;
-  }
-  return null;
-}
-
 export function createCorsMiddleware(options?: CorsOptions) {
   const credentials = options?.credentials === true;
   const configuredOrigin = options?.origin;
-  const configuredOriginList =
-    typeof configuredOrigin === "string"
-      ? [configuredOrigin]
-      : Array.isArray(configuredOrigin)
-        ? configuredOrigin
-        : undefined;
-  const normalizedConfiguredOriginList = configuredOriginList
-    ?.map((origin) => normalizeOrigin(origin))
-    .filter((origin): origin is string => origin !== null);
+
+  // Pre-compute the allowlist at middleware-creation time (not per-request).
+  // Values come entirely from static server config — never from request input.
+  // Using Map.get() at request time returns these static values, which prevents
+  // user-controlled taint from flowing into Access-Control-Allow-Origin headers
+  // (satisfies CodeQL js/cors-misconfiguration-for-credentials).
+  const allowedOriginMap = new Map<string, string>();
+  if (typeof configuredOrigin === "string") {
+    const normalized = normalizeOrigin(configuredOrigin);
+    if (normalized) {
+      allowedOriginMap.set(normalized, normalized);
+    }
+  } else if (Array.isArray(configuredOrigin)) {
+    for (const o of configuredOrigin) {
+      const normalized = normalizeOrigin(o);
+      if (normalized) {
+        allowedOriginMap.set(normalized, normalized);
+      }
+    }
+  }
 
   return (req: Request, res: Response, next: NextFunction): void => {
     const requestOrigin = req.headers.origin;
 
     if (credentials) {
-      const allowlisted = matchAllowlistedOrigin(
-        normalizedConfiguredOriginList,
-        requestOrigin,
-      );
-      if (allowlisted) {
-        res.setHeader("Access-Control-Allow-Origin", allowlisted);
+      // Credentials require an explicit origin allowlist (not origin: true).
+      // Look up the request origin in the pre-built static map.
+      // The value returned by Map.get() is a pre-computed static string —
+      // it is never the raw request origin — so it is safe to use with credentials.
+      const normalizedRequest = normalizeOrigin(requestOrigin);
+      const matched = normalizedRequest
+        ? (allowedOriginMap.get(normalizedRequest) ?? null)
+        : null;
+
+      if (matched !== null) {
+        res.setHeader("Access-Control-Allow-Origin", matched);
         res.setHeader("Vary", "Origin");
         res.setHeader("Access-Control-Allow-Credentials", "true");
       }
     } else {
-      const allowedOrigin = resolveOriginWithoutCredentials(
-        configuredOrigin,
-        requestOrigin,
-      );
+      let allowedOrigin: string | null = null;
+
+      if (configuredOrigin === false) {
+        // CORS disabled — set no Allow-Origin header.
+        allowedOrigin = null;
+      } else if (configuredOrigin === undefined || configuredOrigin === true) {
+        // Allow all origins: use the "*" wildcard.
+        // Do NOT reflect req.headers.origin — using "*" avoids writing
+        // user-controlled input into the response header.
+        allowedOrigin = "*";
+      } else if (typeof configuredOrigin === "string") {
+        allowedOrigin = normalizeOrigin(configuredOrigin);
+      } else if (Array.isArray(configuredOrigin)) {
+        // Same pre-built static map — Map.get() returns a static config value.
+        const normalizedRequest = normalizeOrigin(requestOrigin);
+        allowedOrigin = normalizedRequest
+          ? (allowedOriginMap.get(normalizedRequest) ?? null)
+          : null;
+      }
+
       if (allowedOrigin) {
         res.setHeader("Access-Control-Allow-Origin", allowedOrigin);
-        res.setHeader("Vary", "Origin");
+        // Vary is only meaningful when the response differs by origin (not for "*").
+        if (allowedOrigin !== "*") {
+          res.setHeader("Vary", "Origin");
+        }
       }
     }
 
-    res.setHeader(
-      "Access-Control-Allow-Methods",
-      "GET, POST, OPTIONS",
-    );
-    res.setHeader(
-      "Access-Control-Allow-Headers",
-      "Content-Type, Accept",
-    );
+    res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type, Accept");
 
     if (req.method === "OPTIONS") {
       res.status(204).end();
