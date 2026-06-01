@@ -46,20 +46,30 @@ function resolveOriginWithoutCredentials(
   origin: string | string[] | boolean | undefined,
   requestOrigin: string | undefined,
 ): string | null {
+  const normalizedRequestOrigin = normalizeOrigin(requestOrigin);
+
   if (origin === false) {
     return null;
   }
   if (origin === undefined || origin === true) {
-    return requestOrigin ?? "*";
+    return normalizedRequestOrigin ?? "*";
   }
   if (typeof origin === "string") {
-    return origin;
+    return normalizeOrigin(origin);
   }
   if (Array.isArray(origin)) {
-    if (!requestOrigin) {
+    if (!normalizedRequestOrigin) {
       return null;
     }
-    return origin.includes(requestOrigin) ? requestOrigin : null;
+
+    for (const allowed of origin) {
+      const normalizedAllowed = normalizeOrigin(allowed);
+      if (normalizedAllowed === normalizedRequestOrigin) {
+        return normalizedAllowed;
+      }
+    }
+
+    return null;
   }
   return null;
 }
