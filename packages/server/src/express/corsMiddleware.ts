@@ -1,30 +1,41 @@
 import type { NextFunction, Request, Response } from "express";
 import type { CorsOptions } from "../types.js";
 
+/** Origins that must never be used with credentials (CodeQL / browser safety). */
+const BLOCKED_CREDENTIAL_ORIGINS = new Set(["null", "undefined"]);
+
 /**
- * Resolves Access-Control-Allow-Origin for the request.
- * With credentials, only explicit allowlisted origins are returned (never "*" or blind reflection).
+ * When credentials are enabled, returns a value from the configured allowlist only
+ * (never echoes the raw request Origin header).
  */
-function resolveAllowedOrigin(
+function matchAllowlistedOrigin(
+  configured: string | string[] | undefined,
+  requestOrigin: string | undefined,
+): string | null {
+  if (!configured || !requestOrigin || BLOCKED_CREDENTIAL_ORIGINS.has(requestOrigin)) {
+    return null;
+  }
+
+  if (typeof configured === "string") {
+    return configured === requestOrigin ? configured : null;
+  }
+
+  for (const allowed of configured) {
+    if (allowed === requestOrigin) {
+      return allowed;
+    }
+  }
+
+  return null;
+}
+
+function resolveOriginWithoutCredentials(
   origin: string | string[] | boolean | undefined,
   requestOrigin: string | undefined,
-  credentials: boolean,
 ): string | null {
   if (origin === false) {
     return null;
   }
-
-  if (credentials) {
-    if (typeof origin === "string") {
-      return requestOrigin === origin ? origin : null;
-    }
-    if (Array.isArray(origin)) {
-      return requestOrigin && origin.includes(requestOrigin) ? requestOrigin : null;
-    }
-    // origin: true / undefined cannot be used safely with credentials
-    return null;
-  }
-
   if (origin === undefined || origin === true) {
     return requestOrigin ?? "*";
   }
@@ -32,29 +43,45 @@ function resolveAllowedOrigin(
     return origin;
   }
   if (Array.isArray(origin)) {
-    return requestOrigin && origin.includes(requestOrigin) ? requestOrigin : null;
+    if (!requestOrigin) {
+      return null;
+    }
+    return origin.includes(requestOrigin) ? requestOrigin : null;
   }
-
   return null;
 }
 
 export function createCorsMiddleware(options?: CorsOptions) {
   const credentials = options?.credentials === true;
+  const configuredOrigin = options?.origin;
+  const configuredOriginList =
+    typeof configuredOrigin === "string"
+      ? configuredOrigin
+      : Array.isArray(configuredOrigin)
+        ? configuredOrigin
+        : undefined;
 
   return (req: Request, res: Response, next: NextFunction): void => {
     const requestOrigin = req.headers.origin;
-    const allowedOrigin = resolveAllowedOrigin(
-      options?.origin,
-      requestOrigin,
-      credentials,
-    );
 
-    if (allowedOrigin) {
-      res.setHeader("Access-Control-Allow-Origin", allowedOrigin);
-      res.setHeader("Vary", "Origin");
-
-      if (credentials && allowedOrigin !== "*") {
+    if (credentials) {
+      const allowlisted = matchAllowlistedOrigin(
+        configuredOriginList,
+        requestOrigin,
+      );
+      if (allowlisted) {
+        res.setHeader("Access-Control-Allow-Origin", allowlisted);
+        res.setHeader("Vary", "Origin");
         res.setHeader("Access-Control-Allow-Credentials", "true");
+      }
+    } else {
+      const allowedOrigin = resolveOriginWithoutCredentials(
+        configuredOrigin,
+        requestOrigin,
+      );
+      if (allowedOrigin) {
+        res.setHeader("Access-Control-Allow-Origin", allowedOrigin);
+        res.setHeader("Vary", "Origin");
       }
     }
 
