@@ -34,3 +34,6 @@ jobs:
 
       - name: Build
         run: pnpm build
+
+      - name: Test server
+        run: pnpm --filter ai-chat-toolkit-server test

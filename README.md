@@ -143,6 +143,7 @@ All examples install **1.0.0** from the published npm registry and run standalon
 | [static-html](./examples/static-html/) | Widget via CDN `<script>` tag — no install needed |
 | [react-consumer-example](./examples/react-consumer-example/) | Widget in a React + TypeScript app |
 | [full-stack-local](./examples/full-stack-local/) | Widget + server + LLM tools working together |
+| [langchain-orchestration](./examples/langchain-orchestration/) | LangChain internal orchestration (`orchestration: "langchain"`) |
 
 See [examples/README.md](./examples/README.md) for guidance on which to use.
 
@@ -158,14 +159,15 @@ ai-chat-toolkit/
 └── examples/
     ├── static-html/               # CDN usage example
     ├── react-consumer-example/    # React + npm widget example
-    └── full-stack-local/          # Widget + server + tools example
+    ├── full-stack-local/          # Widget + server + tools example
+    └── langchain-orchestration/   # LangChain orchestration (workspace)
 ```
 
 ---
 
 ## Monorepo scripts
 
-Examples under `examples/` use **`npm install`** and published packages. To work on package source, use **`pnpm`** from the repo root:
+Most examples under `examples/` use **`npm install`** and published packages. **`langchain-orchestration`** is in the pnpm workspace and requires **`pnpm install`** from the repo root. To work on package source, use **`pnpm`** from the repo root:
 
 | Command | Description |
 |---------|-------------|
