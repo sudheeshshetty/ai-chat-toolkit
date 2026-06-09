@@ -47,9 +47,9 @@ export default function App() {
             </h1>
             <p className="hero__text">
               This example sets <code>orchestration: &quot;langchain&quot;</code> on{" "}
-              <code>ai-chat-toolkit-server</code>. The public API is unchanged —
-              only the internal tool-calling loop uses LangChain. Packages are
-              linked from the monorepo workspace (not yet on npm 1.0.0).
+              <code>ai-chat-toolkit-server@^1.1.0</code>. The public API is
+              unchanged — only the internal tool-calling loop uses LangChain.
+              Packages install from npm like any production app.
             </p>
             <ul className="hero__meta">
               <li>
@@ -88,8 +88,8 @@ export default function App() {
       <footer className="footer">
         <div className="container">
           <p>
-            LangChain orchestration · packages/widget + packages/server
-            (workspace)
+            LangChain orchestration · ai-chat-toolkit-widget + ai-chat-toolkit-server
+            (npm)
           </p>
         </div>
       </footer>
