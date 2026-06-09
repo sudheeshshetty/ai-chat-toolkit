@@ -16,6 +16,7 @@ export type {
   ChatRole,
   CorsOptions,
   HealthResponseBody,
+  OrchestrationMode,
   SupportedProvider,
   ToolExecutionContext,
   ToolsListResponseBody,

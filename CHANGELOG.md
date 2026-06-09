@@ -2,6 +2,29 @@
 
 All notable changes to this project are documented here.
 
+Versioning follows [Semantic Versioning](https://semver.org/):
+
+- **Major** (`2.0.0`) — breaking changes; existing integrations must change code or config
+- **Minor** (`1.1.0`) — backward-compatible features; existing code keeps working unchanged
+- **Patch** (`1.0.1`) — backward-compatible bug fixes and security updates
+
+## [1.1.0] — Unreleased
+
+### ai-chat-toolkit-server@1.1.0
+
+**Why minor, not major?** This release adds an optional orchestration mode. Default behavior is unchanged (`orchestration: "native"`). No routes, request/response shapes, or existing options were removed or renamed. Existing apps that do not set `orchestration` behave exactly as in 1.0.0.
+
+- **LangChain orchestration (opt-in)** — `orchestration: "langchain"` for multi-step tool chaining via an internal LangChain agent loop. Default remains `"native"` (the original server-owned tool loop).
+- **New optional option** — `orchestration?: "native" | "langchain"` on `AiChatServerOptions`.
+- **New exported type** — `OrchestrationMode`.
+- **Dependencies** — `langchain`, `@langchain/core`, and `zod` added as regular dependencies (install footprint grows even when using `"native"`; behavior does not change).
+- **Tests** — orchestration prompt merge and `LangChainAgentOrchestrator` coverage (direct reply, single tool, multi-tool chain, tool failure).
+- **Example** — `examples/langchain-orchestration/` (workspace-linked demo on ports 5174 / 3335).
+
+### ai-chat-toolkit-widget@1.0.0
+
+No changes in this release line.
+
 ## [1.0.0] — 2026-06-01
 
 First stable release of both packages. From this version onward:
@@ -28,4 +51,5 @@ First stable release of both packages. From this version onward:
 
 **GitHub tags:** [widget-v1.0.0](https://github.com/sudheeshshetty/ai-chat-toolkit/releases/tag/widget-v1.0.0) · [server-v1.0.0](https://github.com/sudheeshshetty/ai-chat-toolkit/releases/tag/server-v1.0.0)
 
+[1.1.0]: https://github.com/sudheeshshetty/ai-chat-toolkit/compare/server-v1.0.0...server-v1.1.0
 [1.0.0]: https://github.com/sudheeshshetty/ai-chat-toolkit/releases/tag/widget-v1.0.0

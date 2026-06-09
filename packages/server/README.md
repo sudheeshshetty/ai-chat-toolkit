@@ -130,6 +130,29 @@ The LLM decides when to call a tool. Up to `maxToolRounds` tool-call loops happe
 
 ---
 
+## Tool orchestration (LangChain, internal)
+
+By default the server uses a lightweight native tool loop (`orchestration: "native"` — unchanged from 1.0.0).
+
+For multi-step tasks (tool order, chaining outputs into later tools), opt in:
+
+```ts
+new AiChatServer({
+  provider: "groq",
+  apiKey: process.env.API_KEY,
+  model: "llama-3.3-70b-versatile",
+  orchestration: "langchain",
+});
+```
+
+LangChain is bundled as an internal dependency and is **not** exported from this package. Your public API (`addTools`, chat routes, request/response shape) stays the same.
+
+Requires a provider that supports tool calling (Groq / OpenAI-compatible). Gemini and Ollama are chat-only today.
+
+Runnable demo: [examples/langchain-orchestration](../../examples/langchain-orchestration/).
+
+---
+
 ## System prompt
 
 Shape the assistant's personality and behavior:
@@ -216,6 +239,8 @@ new AiChatServer({
 { "message": "Here are our products..." }
 ```
 
+`history` is optional. When provided, prior `user` / `assistant` turns are sent to the LLM so follow-up questions work. The server does **not** persist history — the client (widget) must resend it on every request.
+
 **Error response**
 
 ```json
@@ -234,6 +259,7 @@ new AiChatServer({
 | `baseUrl` | Provider default | Override the provider's API base URL |
 | `path` | `/ai-chat/custom` | Chat endpoint path |
 | `systemPrompt` | — | System message sent to the LLM on every request |
+| `orchestration` | `"native"` | `"native"` or `"langchain"` (internal multi-step tool orchestration) |
 | `maxToolRounds` | `3` | Max tool-call loops per request |
 | `cors` | — | CORS config (see above) |
 

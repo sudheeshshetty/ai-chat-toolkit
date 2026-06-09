@@ -17,6 +17,8 @@ export interface CorsOptions {
   origin?: string | string[] | boolean;
 }
 
+export type OrchestrationMode = "native" | "langchain";
+
 export interface AiChatServerOptions {
   path?: string;
   provider: SupportedProvider;
@@ -25,6 +27,8 @@ export interface AiChatServerOptions {
   baseUrl?: string;
   systemPrompt?: string;
   maxToolRounds?: number;
+  /** Default: "native" (existing provider loop). Use "langchain" for multi-step tool orchestration. */
+  orchestration?: OrchestrationMode;
   cors?: CorsOptions;
 }
 

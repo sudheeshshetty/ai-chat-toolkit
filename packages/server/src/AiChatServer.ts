@@ -14,6 +14,7 @@ import type {
 } from "./types.js";
 import { AiChatServerError } from "./utils/errors.js";
 import { normalizeHistory } from "./utils/normalizeHistory.js";
+import { LangChainAgentOrchestrator } from "./orchestration/langchain/LangChainAgentOrchestrator.js";
 import {
   attachExpressRoutes,
 } from "./express/attachExpressRoutes.js";
@@ -30,13 +31,25 @@ export class AiChatServer {
   readonly #toolRegistry = new ToolRegistry();
   readonly #systemPrompt?: string;
   readonly #maxToolRounds: number;
+  readonly #orchestration: "native" | "langchain";
+  readonly #langChainOrchestrator?: LangChainAgentOrchestrator;
 
   constructor(options: AiChatServerOptions) {
     this.chatPath = normalizeChatPath(options.path ?? DEFAULT_PATH);
     this.corsOptions = options.cors;
     this.#systemPrompt = options.systemPrompt;
     this.#maxToolRounds = options.maxToolRounds ?? DEFAULT_MAX_TOOL_ROUNDS;
+    this.#orchestration = options.orchestration ?? "native";
     this.#provider = createProvider(options);
+
+    if (this.#orchestration === "langchain") {
+      this.#langChainOrchestrator = new LangChainAgentOrchestrator({
+        provider: this.#provider,
+        toolRegistry: this.#toolRegistry,
+        systemPrompt: this.#systemPrompt,
+        maxToolRounds: this.#maxToolRounds,
+      });
+    }
   }
 
   addTools(tools: AiTool[]): this {
@@ -71,7 +84,6 @@ export class AiChatServer {
     }
 
     const history = normalizeHistory(input.history);
-    let messages = this.#buildInitialMessages(history, userMessage);
 
     const tools = this.#toolRegistry.hasTools()
       ? this.#toolRegistry.getAll()
@@ -88,6 +100,16 @@ export class AiChatServer {
       request: input.request,
       headers: input.request.headers,
     };
+
+    if (this.#orchestration === "langchain" && this.#langChainOrchestrator) {
+      return this.#langChainOrchestrator.run({
+        history,
+        userMessage,
+        context,
+      });
+    }
+
+    let messages = this.#buildInitialMessages(history, userMessage);
 
     for (let round = 0; round < this.#maxToolRounds; round++) {
       const result = await this.#provider.complete(messages, tools);
