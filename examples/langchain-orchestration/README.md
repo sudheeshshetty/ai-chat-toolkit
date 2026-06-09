@@ -1,8 +1,8 @@
 # LangChain Orchestration Example
 
-Demonstrates **`orchestration: "langchain"`** on `ai-chat-toolkit-server` — the same public API as the [full-stack-local](../full-stack-local/) example, with LangChain handling the internal tool-calling loop.
+Demonstrates **`orchestration: "langchain"`** on `ai-chat-toolkit-server@^1.1.0` — the same public API as the [full-stack-local](../full-stack-local/) example, with LangChain handling the internal tool-calling loop.
 
-This example links **workspace packages** from the monorepo (the LangChain option is not on the published **1.0.0** npm line yet).
+Installs both packages from npm — the same way any production app would.
 
 ---
 
@@ -26,15 +26,11 @@ Demo tools (designed for multi-step chains):
 
 ## Quick start
 
-From the **repo root** (so workspace packages link correctly):
-
 ```bash
-pnpm install
-pnpm build
-cd examples/langchain-orchestration
+npm install
 cp .env.example .env
 # Edit .env: fill in your API_KEY
-pnpm dev
+npm run dev
 ```
 
 Open http://localhost:5174 and click the chat bubble.
@@ -83,10 +79,10 @@ Omit `orchestration` (or set `"native"`) to use the default loop — see [full-s
 
 | Script | Description |
 |--------|-------------|
-| `pnpm dev` | Start backend + Vite frontend |
-| `pnpm run dev:web` | Frontend only (port 5174) |
-| `pnpm run dev:server` | Backend only (port 3335) |
-| `pnpm run build` | Production build |
+| `npm run dev` | Start backend + Vite frontend |
+| `npm run dev:web` | Frontend only (port 5174) |
+| `npm run dev:server` | Backend only (port 3335) |
+| `npm run build` | Production build |
 
 ---
 

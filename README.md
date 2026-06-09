@@ -2,14 +2,14 @@
 
 Open-source toolkit for embedding an AI-powered chat widget in any web app, backed by your own Express server with LLM provider support and tool calling.
 
-**Stable release:** [`ai-chat-toolkit-widget@1.0.0`](https://www.npmjs.com/package/ai-chat-toolkit-widget/v/1.0.0) and [`ai-chat-toolkit-server@1.0.0`](https://www.npmjs.com/package/ai-chat-toolkit-server/v/1.0.0) on npm.
+**Stable releases:** [`ai-chat-toolkit-widget@1.0.0`](https://www.npmjs.com/package/ai-chat-toolkit-widget/v/1.0.0) and [`ai-chat-toolkit-server@1.1.0`](https://www.npmjs.com/package/ai-chat-toolkit-server/v/1.1.0) on npm.
 
 ## Packages
 
 | Package | Version | Description |
 |---------|---------|-------------|
 | [`ai-chat-toolkit-widget`](./packages/widget/) | [![npm](https://img.shields.io/npm/v/ai-chat-toolkit-widget)](https://www.npmjs.com/package/ai-chat-toolkit-widget) **1.0.0** | Embeddable Web Component (Shadow DOM, no framework required) |
-| [`ai-chat-toolkit-server`](./packages/server/) | [![npm](https://img.shields.io/npm/v/ai-chat-toolkit-server)](https://www.npmjs.com/package/ai-chat-toolkit-server) **1.0.0** | Express backend with LLM providers + tool calling |
+| [`ai-chat-toolkit-server`](./packages/server/) | [![npm](https://img.shields.io/npm/v/ai-chat-toolkit-server)](https://www.npmjs.com/package/ai-chat-toolkit-server) **1.1.0** | Express backend with LLM providers + tool calling |
 
 ```
 Your web app
@@ -45,7 +45,7 @@ Express backend           ← ai-chat-toolkit-server
 ### 2. Add the backend (Express)
 
 ```bash
-npm install ai-chat-toolkit-server@^1.0.0 express
+npm install ai-chat-toolkit-server@^1.1.0 express
 ```
 
 ```ts
@@ -104,7 +104,7 @@ Any backend that follows this contract works with the widget — you don't have 
 
 ![Full Stack Demo — widget + server with tools](./docs/assets/demo-ai-chat-toolkit.gif)
 
-End-to-end example using **`ai-chat-toolkit-widget@^1.0.0`** and **`ai-chat-toolkit-server@^1.0.0`** — a React frontend with the chat widget connected to a Groq-powered Express backend with three demo tools.
+End-to-end example using **`ai-chat-toolkit-widget@^1.0.0`** and **`ai-chat-toolkit-server@^1.1.0`** — a React frontend with the chat widget connected to a Groq-powered Express backend with three demo tools.
 
 | Layer | URL |
 |-------|-----|
@@ -136,7 +136,7 @@ Details: [examples/full-stack-local/README.md](./examples/full-stack-local/READM
 
 ## Examples
 
-All examples install **1.0.0** from the published npm registry and run standalone.
+All examples install published packages from npm and run standalone.
 
 | Folder | What it shows |
 |--------|---------------|
@@ -160,14 +160,14 @@ ai-chat-toolkit/
     ├── static-html/               # CDN usage example
     ├── react-consumer-example/    # React + npm widget example
     ├── full-stack-local/          # Widget + server + tools example
-    └── langchain-orchestration/   # LangChain orchestration (workspace)
+    └── langchain-orchestration/   # LangChain orchestration example
 ```
 
 ---
 
 ## Monorepo scripts
 
-Most examples under `examples/` use **`npm install`** and published packages. **`langchain-orchestration`** is in the pnpm workspace and requires **`pnpm install`** from the repo root. To work on package source, use **`pnpm`** from the repo root:
+Examples under `examples/` use **`npm install`** and published packages. To work on package source, use **`pnpm`** from the repo root:
 
 | Command | Description |
 |---------|-------------|

@@ -1,8 +1,8 @@
 # Full Stack Example
 
-Complete example showing **`ai-chat-toolkit-widget@^1.0.0`** and **`ai-chat-toolkit-server@^1.0.0`** working together with a real LLM provider and custom tools.
+Complete example showing **`ai-chat-toolkit-widget@^1.0.0`** and **`ai-chat-toolkit-server@^1.1.0`** working together with a real LLM provider and custom tools.
 
-Installs both packages from npm (stable **1.0.0** line) — the same way any production app would.
+Installs both packages from npm — the same way any production app would.
 
 ---
 

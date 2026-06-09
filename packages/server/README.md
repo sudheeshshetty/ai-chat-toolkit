@@ -1,10 +1,10 @@
 # ai-chat-toolkit-server
 
-[![npm version](https://img.shields.io/npm/v/ai-chat-toolkit-server)](https://www.npmjs.com/package/ai-chat-toolkit-server/v/1.0.0)
+[![npm version](https://img.shields.io/npm/v/ai-chat-toolkit-server)](https://www.npmjs.com/package/ai-chat-toolkit-server/v/1.1.0)
 
 Plug-and-play AI chat backend for Express apps. Connect any LLM provider and register custom tools — the widget handles the UI, this handles the intelligence.
 
-**Current release:** [1.0.0](https://www.npmjs.com/package/ai-chat-toolkit-server/v/1.0.0) on npm.
+**Current release:** [1.1.0](https://www.npmjs.com/package/ai-chat-toolkit-server/v/1.1.0) on npm.
 
 Works with [`ai-chat-toolkit-widget@1.0.0`](https://www.npmjs.com/package/ai-chat-toolkit-widget/v/1.0.0) or any client that follows the [chat API contract](#api-contract).
 
@@ -13,7 +13,7 @@ Works with [`ai-chat-toolkit-widget@1.0.0`](https://www.npmjs.com/package/ai-cha
 ## Install
 
 ```bash
-npm install ai-chat-toolkit-server@^1.0.0 express
+npm install ai-chat-toolkit-server@^1.1.0 express
 ```
 
 ---
