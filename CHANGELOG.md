@@ -8,7 +8,7 @@ Versioning follows [Semantic Versioning](https://semver.org/):
 - **Minor** (`1.1.0`) — backward-compatible features; existing code keeps working unchanged
 - **Patch** (`1.0.1`) — backward-compatible bug fixes and security updates
 
-## [1.1.0] — Unreleased
+## [1.1.0] — 2026-06-09
 
 ### ai-chat-toolkit-server@1.1.0
 
@@ -19,7 +19,9 @@ Versioning follows [Semantic Versioning](https://semver.org/):
 - **New exported type** — `OrchestrationMode`.
 - **Dependencies** — `langchain`, `@langchain/core`, and `zod` added as regular dependencies (install footprint grows even when using `"native"`; behavior does not change).
 - **Tests** — orchestration prompt merge and `LangChainAgentOrchestrator` coverage (direct reply, single tool, multi-tool chain, tool failure).
-- **Example** — `examples/langchain-orchestration/` (workspace-linked demo on ports 5174 / 3335).
+- **Example** — `examples/langchain-orchestration/` (npm packages, ports 5174 / 3335).
+
+**GitHub tag:** [server-v1.1.0](https://github.com/sudheeshshetty/ai-chat-toolkit/releases/tag/server-v1.1.0)
 
 ### ai-chat-toolkit-widget@1.0.0
 
@@ -51,5 +53,5 @@ First stable release of both packages. From this version onward:
 
 **GitHub tags:** [widget-v1.0.0](https://github.com/sudheeshshetty/ai-chat-toolkit/releases/tag/widget-v1.0.0) · [server-v1.0.0](https://github.com/sudheeshshetty/ai-chat-toolkit/releases/tag/server-v1.0.0)
 
-[1.1.0]: https://github.com/sudheeshshetty/ai-chat-toolkit/compare/server-v1.0.0...server-v1.1.0
+[1.1.0]: https://github.com/sudheeshshetty/ai-chat-toolkit/releases/tag/server-v1.1.0
 [1.0.0]: https://github.com/sudheeshshetty/ai-chat-toolkit/releases/tag/widget-v1.0.0
