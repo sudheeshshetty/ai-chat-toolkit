@@ -1,0 +1,83 @@
+export interface RagDocument {
+  id: string;
+  text: string;
+  metadata?: Record<string, unknown>;
+}
+
+export interface RagChunk {
+  id: string;
+  documentId: string;
+  text: string;
+  metadata?: Record<string, unknown>;
+}
+
+export interface RagChunkWithEmbedding extends RagChunk {
+  embedding: number[];
+}
+
+export interface RagSearchResult {
+  chunk: RagChunk;
+  score: number;
+}
+
+export interface RagSearchOptions {
+  limit?: number;
+}
+
+export interface RagSource {
+  load(): Promise<RagDocument[]> | RagDocument[];
+}
+
+export interface RagStore {
+  add(
+    chunks: RagChunkWithEmbedding[],
+  ): Promise<void> | void;
+  search(
+    queryEmbedding: number[],
+    options?: RagSearchOptions,
+  ): Promise<RagSearchResult[]> | RagSearchResult[];
+}
+
+export type EmbedTextFn = (text: string) => Promise<number[]>;
+
+export interface OpenAIEmbeddingsConfig {
+  provider: "openai";
+  apiKey: string;
+  model?: string;
+  baseUrl?: string;
+}
+
+export interface CustomEmbeddingsConfig {
+  provider?: "custom";
+  embed: EmbedTextFn;
+}
+
+export type RagEmbeddingsConfig =
+  | OpenAIEmbeddingsConfig
+  | CustomEmbeddingsConfig;
+
+export interface RagChunkingConfig {
+  chunkSize?: number;
+  overlap?: number;
+}
+
+export interface RagSearchConfig {
+  limit?: number;
+}
+
+export interface RagOptions {
+  sources?: RagSource[];
+  store?: RagStore | null;
+  embeddings: RagEmbeddingsConfig;
+  chunking?: RagChunkingConfig;
+  search?: RagSearchConfig;
+}
+
+export interface ResolvedRagChunkingConfig {
+  chunkSize: number;
+  overlap: number;
+}
+
+export interface ResolvedRagSearchConfig {
+  limit: number;
+}
