@@ -1,8 +1,9 @@
-import type { Express } from "express";
-import type { Request } from "express";
+import type { Express, Request } from "express";
 import { createProvider } from "./providers/ProviderFactory.js";
 import type { LLMProvider } from "./providers/LLMProvider.js";
 import { ToolRegistry } from "./tool-registry/ToolRegistry.js";
+import { runBeforeLLMHooks } from "./plugins/runBeforeLLMHooks.js";
+import { mergeHookContextIntoSystemContent } from "./plugins/systemPrompt.js";
 import type {
   AiChatServerOptions,
   AiTool,
@@ -12,6 +13,11 @@ import type {
   LLMMessage,
   ToolsListResponseBody,
 } from "./types.js";
+import type {
+  AiChatServerPlugin,
+  AiChatServerPluginHost,
+  BeforeLLMHook,
+} from "./plugins/types.js";
 import { AiChatServerError } from "./utils/errors.js";
 import { normalizeHistory } from "./utils/normalizeHistory.js";
 import { LangChainAgentOrchestrator } from "./orchestration/langchain/LangChainAgentOrchestrator.js";
@@ -23,7 +29,7 @@ const DEFAULT_PATH = "/ai-chat/custom";
 const DEFAULT_MAX_TOOL_ROUNDS = 3;
 const PACKAGE_NAME = "ai-chat-toolkit-server";
 
-export class AiChatServer {
+export class AiChatServer implements AiChatServerPluginHost {
   readonly chatPath: string;
   readonly corsOptions: CorsOptions | undefined;
 
@@ -33,6 +39,7 @@ export class AiChatServer {
   readonly #maxToolRounds: number;
   readonly #orchestration: "native" | "langchain";
   readonly #langChainOrchestrator?: LangChainAgentOrchestrator;
+  readonly #beforeLLMHooks: BeforeLLMHook[] = [];
 
   constructor(options: AiChatServerOptions) {
     this.chatPath = normalizeChatPath(options.path ?? DEFAULT_PATH);
@@ -50,6 +57,15 @@ export class AiChatServer {
         maxToolRounds: this.#maxToolRounds,
       });
     }
+  }
+
+  use(plugin: AiChatServerPlugin): this {
+    plugin.install(this);
+    return this;
+  }
+
+  registerBeforeLLMHook(hook: BeforeLLMHook): void {
+    this.#beforeLLMHooks.push(hook);
   }
 
   addTools(tools: AiTool[]): this {
@@ -101,15 +117,25 @@ export class AiChatServer {
       headers: input.request.headers,
     };
 
+    const hookContext = await runBeforeLLMHooks(this.#beforeLLMHooks, {
+      message: userMessage,
+      history: history.filter(
+        (entry): entry is ChatMessage & { role: "user" | "assistant" } =>
+          entry.role === "user" || entry.role === "assistant",
+      ),
+      request: input.request,
+    });
+
     if (this.#orchestration === "langchain" && this.#langChainOrchestrator) {
       return this.#langChainOrchestrator.run({
         history,
         userMessage,
         context,
+        hookContext,
       });
     }
 
-    let messages = this.#buildInitialMessages(history, userMessage);
+    let messages = this.#buildInitialMessages(history, userMessage, hookContext);
 
     for (let round = 0; round < this.#maxToolRounds; round++) {
       const result = await this.#provider.complete(messages, tools);
@@ -149,11 +175,17 @@ export class AiChatServer {
   #buildInitialMessages(
     history: ChatMessage[],
     userMessage: string,
+    hookContext?: string,
   ): LLMMessage[] {
     const messages: LLMMessage[] = [];
 
-    if (this.#systemPrompt?.trim()) {
-      messages.push({ role: "system", content: this.#systemPrompt.trim() });
+    const systemContent = mergeHookContextIntoSystemContent(
+      this.#systemPrompt,
+      hookContext,
+    );
+
+    if (systemContent) {
+      messages.push({ role: "system", content: systemContent });
     }
 
     for (const entry of history) {

@@ -8,6 +8,13 @@ export { createCorsMiddleware } from "./express/corsMiddleware.js";
 export { attachExpressRoutes } from "./express/attachExpressRoutes.js";
 export { AiChatServerError, toErrorMessage } from "./utils/errors.js";
 export type {
+  AiChatServerPlugin,
+  AiChatServerPluginHost,
+  BeforeLLMHook,
+  BeforeLLMHookInput,
+  BeforeLLMHookResult,
+} from "./plugins/types.js";
+export type {
   AiChatServerOptions,
   AiTool,
   ChatMessage,

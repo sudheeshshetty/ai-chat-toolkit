@@ -5,8 +5,24 @@ All notable changes to this project are documented here.
 Versioning follows [Semantic Versioning](https://semver.org/):
 
 - **Major** (`2.0.0`) — breaking changes; existing integrations must change code or config
-- **Minor** (`1.1.0`) — backward-compatible features; existing code keeps working unchanged
+- **Minor** (`1.2.0`) — backward-compatible features; existing code keeps working unchanged
 - **Patch** (`1.0.1`) — backward-compatible bug fixes and security updates
+
+## [1.2.0] — 2026-06-14
+
+### ai-chat-toolkit-server@1.2.0
+
+Backward-compatible minor release. Default behavior is unchanged — existing apps work without code changes.
+
+- **Generic plugin support** — `server.use(plugin)` calls `plugin.install(server)` for optional extensions.
+- **Before-LLM hooks** — `server.registerBeforeLLMHook(fn)` runs registered hooks before each LLM call; returned `context` is appended to the system prompt (native and LangChain paths).
+- **New exported types** — `AiChatServerPlugin`, `AiChatServerPluginHost`, `BeforeLLMHook`, `BeforeLLMHookInput`, `BeforeLLMHookResult`.
+- **Hook resilience** — hook failures are logged and do not crash the request.
+- **Tests** — plugin install, hook registration, context injection, and backward compatibility coverage.
+
+### ai-chat-toolkit-widget@1.0.0
+
+No changes in this release line.
 
 ## [1.1.0] — 2026-06-09
 
@@ -53,5 +69,6 @@ First stable release of both packages. From this version onward:
 
 **GitHub tags:** [widget-v1.0.0](https://github.com/sudheeshshetty/ai-chat-toolkit/releases/tag/widget-v1.0.0) · [server-v1.0.0](https://github.com/sudheeshshetty/ai-chat-toolkit/releases/tag/server-v1.0.0)
 
+[1.2.0]: https://github.com/sudheeshshetty/ai-chat-toolkit/compare/server-v1.1.0...server-v1.2.0
 [1.1.0]: https://github.com/sudheeshshetty/ai-chat-toolkit/releases/tag/server-v1.1.0
 [1.0.0]: https://github.com/sudheeshshetty/ai-chat-toolkit/releases/tag/widget-v1.0.0
