@@ -4,7 +4,7 @@ All notable changes to **ai-chat-toolkit-rag** are documented here.
 
 Versioning follows [Semantic Versioning](https://semver.org/).
 
-## [0.1.0] — 2026-05-30
+## [0.1.0] — 2026-06-14
 
 - Added initial optional RAG plugin via `rag(options)` and `server.use(rag(...))`.
 - Added chunking with configurable `chunkSize` and `overlap` (defaults 1000 / 200).
