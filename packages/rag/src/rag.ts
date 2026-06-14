@@ -1,4 +1,3 @@
-import type { AiChatServerPluginHost } from "ai-chat-toolkit-server";
 import { resolveChunkingConfig } from "./chunking/chunkText.js";
 import { createEmbedder } from "./embeddings/createEmbedder.js";
 import { indexDocuments } from "./orchestration/indexDocuments.js";
@@ -6,6 +5,7 @@ import { retrieveContext } from "./orchestration/retrieveContext.js";
 import type {
   EmbedTextFn,
   RagOptions,
+  RagPluginHost,
   RagSource,
   RagStore,
   ResolvedRagSearchConfig,
@@ -15,7 +15,7 @@ const DEFAULT_SEARCH_LIMIT = 5;
 const LOG_PREFIX = "[ai-chat-toolkit-rag]";
 
 export interface RagPlugin {
-  install(server: AiChatServerPluginHost): void;
+  install(server: RagPluginHost): void;
   index(): Promise<number>;
 }
 
@@ -74,7 +74,7 @@ export function rag(options: RagOptions): RagPlugin {
   }
 
   return {
-    install(server: AiChatServerPluginHost) {
+    install(server: RagPluginHost) {
       if (canIndex(state)) {
         void index();
       }
