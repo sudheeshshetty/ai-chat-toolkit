@@ -186,10 +186,11 @@ Packages are released independently via GitHub Actions (manual dispatch):
 |----------|---------|----------|
 | **Release ai-chat-toolkit-widget** | `packages/widget` | `ai-chat-toolkit-widget` |
 | **Release ai-chat-toolkit-server** | `packages/server` | `ai-chat-toolkit-server` |
+| **Release ai-chat-toolkit-rag** | `packages/rag` | `ai-chat-toolkit-rag` |
 
-Each workflow creates a prefixed git tag (`widget-v*`, `server-v*`) and publishes to npm. Use **`current`** to publish the version in `package.json`; use **patch** / **minor** / **major** to bump first. Requires `NPM_TOKEN` in repo secrets.
+Each workflow creates a prefixed git tag (`widget-v*`, `server-v*`, `rag-v*`) and publishes to npm. Use **`current`** to publish the version in `package.json`; use **patch** / **minor** / **major** to bump first. Requires `NPM_TOKEN` in repo secrets.
 
-See [CHANGELOG.md](./CHANGELOG.md) for release notes.
+See [CHANGELOG.md](./CHANGELOG.md) for a monorepo overview, or each package's `CHANGELOG.md` for package-specific release notes.
 
 ---
 

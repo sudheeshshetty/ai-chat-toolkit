@@ -1,3 +1,30 @@
+export interface RagBeforeLLMHookHistoryEntry {
+  role: "user" | "assistant";
+  content: string;
+}
+
+export interface RagBeforeLLMHookInput {
+  message: string;
+  history: RagBeforeLLMHookHistoryEntry[];
+  request: unknown;
+}
+
+export interface RagBeforeLLMHookResult {
+  context?: string;
+}
+
+export type RagBeforeLLMHook = (
+  input: RagBeforeLLMHookInput,
+) =>
+  | Promise<RagBeforeLLMHookResult | void>
+  | RagBeforeLLMHookResult
+  | void;
+
+/** Minimal server surface used by rag(); compatible with AiChatServer from ai-chat-toolkit-server. */
+export interface RagPluginHost {
+  registerBeforeLLMHook(hook: RagBeforeLLMHook): void;
+}
+
 export interface RagDocument {
   id: string;
   text: string;
