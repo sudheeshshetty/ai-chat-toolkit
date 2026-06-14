@@ -1,10 +1,10 @@
 # ai-chat-toolkit-server
 
-[![npm version](https://img.shields.io/npm/v/ai-chat-toolkit-server)](https://www.npmjs.com/package/ai-chat-toolkit-server/v/1.1.0)
+[![npm version](https://img.shields.io/npm/v/ai-chat-toolkit-server)](https://www.npmjs.com/package/ai-chat-toolkit-server/v/1.2.0)
 
 Plug-and-play AI chat backend for Express apps. Connect any LLM provider and register custom tools — the widget handles the UI, this handles the intelligence.
 
-**Current release:** [1.1.0](https://www.npmjs.com/package/ai-chat-toolkit-server/v/1.1.0) on npm.
+**Current release:** [1.2.0](https://www.npmjs.com/package/ai-chat-toolkit-server/v/1.2.0) on npm.
 
 Works with [`ai-chat-toolkit-widget@1.0.0`](https://www.npmjs.com/package/ai-chat-toolkit-widget/v/1.0.0) or any client that follows the [chat API contract](#api-contract).
 
@@ -13,7 +13,7 @@ Works with [`ai-chat-toolkit-widget@1.0.0`](https://www.npmjs.com/package/ai-cha
 ## Install
 
 ```bash
-npm install ai-chat-toolkit-server@^1.1.0 express
+npm install ai-chat-toolkit-server@^1.2.0 express
 ```
 
 ---
@@ -150,6 +150,38 @@ LangChain is bundled as an internal dependency and is **not** exported from this
 Requires a provider that supports tool calling (Groq / OpenAI-compatible). Gemini and Ollama are chat-only today.
 
 Runnable demo: [examples/langchain-orchestration](../../examples/langchain-orchestration/).
+
+---
+
+## Plugin support
+
+Extend the server with optional plugins without changing the core API:
+
+```ts
+const plugin = {
+  install(server) {
+    server.registerBeforeLLMHook(async ({ message, history }) => {
+      return {
+        context: "Extra context before LLM call",
+      };
+    });
+  },
+};
+
+const server = new AiChatServer({ /* ... */ });
+server.use(plugin);
+```
+
+**Contract**
+
+- `server.use(plugin)` calls `plugin.install(server)`
+- `server.registerBeforeLLMHook(fn)` registers a hook that runs before each LLM call
+- Hooks receive `{ message, history, request }`
+- Hooks may return `{ context?: string }` — returned text is appended to the system prompt
+- Multiple hooks are supported; their context blocks are combined in registration order
+- Hook errors are logged and do not crash the request
+
+Works with both native and LangChain orchestration paths.
 
 ---
 

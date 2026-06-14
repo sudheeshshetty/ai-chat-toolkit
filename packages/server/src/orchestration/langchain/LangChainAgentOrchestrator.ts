@@ -34,6 +34,7 @@ export class LangChainAgentOrchestrator {
     history: ChatMessage[];
     userMessage: string;
     context: ToolExecutionContext;
+    hookContext?: string;
   }): Promise<string> {
     const aiTools = this.#toolRegistry.getAll();
     const langChainTools = aiToolsToLangChainTools(
@@ -47,10 +48,15 @@ export class LangChainAgentOrchestrator {
       aiTools,
     });
 
+    let systemPrompt = resolveOrchestrationSystemPrompt(this.#systemPrompt);
+    if (input.hookContext?.trim()) {
+      systemPrompt = `${systemPrompt}\n\n${input.hookContext.trim()}`;
+    }
+
     const agent = createAgent({
       model,
       tools: langChainTools,
-      systemPrompt: resolveOrchestrationSystemPrompt(this.#systemPrompt),
+      systemPrompt,
     });
 
     const messages = chatHistoryToLangChainMessages(
