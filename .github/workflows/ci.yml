@@ -37,3 +37,6 @@ jobs:
 
       - name: Test server
         run: pnpm --filter ai-chat-toolkit-server test
+
+      - name: Test rag
+        run: pnpm --filter ai-chat-toolkit-rag test
