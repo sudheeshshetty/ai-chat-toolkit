@@ -20,7 +20,6 @@ export {
   resolveEmbeddingsConfig,
 } from "./embeddings/resolveEmbeddingsConfig.js";
 export type { EmbeddingsFromEnvInput } from "./embeddings/embeddingsFromEnv.js";
-export type { EmbeddingProvider } from "./embeddings/embeddingDefaults.js";
 export type { ResolvedProviderEmbeddingsConfig } from "./embeddings/resolveEmbeddingsConfig.js";
 export { formatSearchResultsAsContext } from "./context/formatSearchResults.js";
 export { indexDocuments } from "./orchestration/indexDocuments.js";
