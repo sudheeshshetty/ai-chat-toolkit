@@ -6,13 +6,17 @@ Each published package also has its own changelog (included on npm):
 
 | Package | Changelog | Current version |
 |---------|-----------|-----------------|
-| ai-chat-toolkit-server | [packages/server/CHANGELOG.md](./packages/server/CHANGELOG.md) | 1.2.0 |
+| ai-chat-toolkit-server | [packages/server/CHANGELOG.md](./packages/server/CHANGELOG.md) | 1.2.1 |
 | ai-chat-toolkit-widget | [packages/widget/CHANGELOG.md](./packages/widget/CHANGELOG.md) | 1.0.0 |
 | ai-chat-toolkit-rag | [packages/rag/CHANGELOG.md](./packages/rag/CHANGELOG.md) | 0.1.0 |
 
 Versioning follows [Semantic Versioning](https://semver.org/) per package. Packages release independently with prefixed git tags (`server-v*`, `widget-v*`, `rag-v*`).
 
 ## Recent releases
+
+### Unreleased
+
+- **ai-chat-toolkit-server@1.2.1** — `serverOptionsFromEnv()` for env-based chat provider config ([details](./packages/server/CHANGELOG.md#121--unreleased))
 
 ### 2026-06-14
 

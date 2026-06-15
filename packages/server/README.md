@@ -39,6 +39,34 @@ app.listen(3000, () => console.log("Listening on http://localhost:3000"));
 
 That's it. The server now accepts `POST /ai-chat/custom` and responds to chat messages.
 
+### Environment-based options
+
+Use `serverOptionsFromEnv()` to map common env vars to `AiChatServer` options:
+
+```ts
+import { AiChatServer, serverOptionsFromEnv } from "ai-chat-toolkit-server";
+
+const aiChat = new AiChatServer({
+  path: "/my-chat",
+  ...serverOptionsFromEnv({
+    provider: process.env.PROVIDER,
+    apiKey: process.env.API_KEY ?? process.env.OPENAI_API_KEY,
+    model: process.env.MODEL,
+    baseUrl: process.env.BASE_URL,
+  }),
+  cors: { origin: true },
+});
+```
+
+| Input | Typical env var | Notes |
+|-------|-----------------|-------|
+| `provider` | `PROVIDER` | `groq`, `openai` / `openai-compatible`, `gemini`, `ollama`; defaults to `groq` |
+| `apiKey` | `API_KEY` | Optional on the options object |
+| `model` | `MODEL` | Falls back to per-provider default |
+| `baseUrl` | `BASE_URL` | For OpenAI-compatible or Ollama endpoints |
+
+Exported defaults: `DEFAULT_CHAT_PROVIDER`, `CHAT_PROVIDER_DEFAULTS`.
+
 ---
 
 ## Providers
