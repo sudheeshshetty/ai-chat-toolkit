@@ -1,7 +1,8 @@
-import type { EmbedTextFn, OpenAIEmbeddingsConfig } from "../types.js";
+import type { EmbedTextFn } from "../types.js";
+import { EMBEDDING_PROVIDER_DEFAULTS } from "./embeddingDefaults.js";
+import type { ResolvedProviderEmbeddingsConfig } from "./resolveEmbeddingsConfig.js";
 
-const DEFAULT_MODEL = "text-embedding-3-small";
-const DEFAULT_BASE_URL = "https://api.openai.com/v1";
+const OPENAI_DEFAULTS = EMBEDDING_PROVIDER_DEFAULTS.openai;
 
 interface OpenAIEmbeddingsResponse {
   data?: Array<{ embedding?: number[] }>;
@@ -9,15 +10,14 @@ interface OpenAIEmbeddingsResponse {
 }
 
 export function createOpenAIEmbedder(
-  config: OpenAIEmbeddingsConfig,
+  config: ResolvedProviderEmbeddingsConfig,
 ): EmbedTextFn {
-  const apiKey = config.apiKey?.trim();
-  if (!apiKey) {
-    throw new Error("OpenAI embeddings require an apiKey.");
-  }
-
-  const model = config.model ?? DEFAULT_MODEL;
-  const baseUrl = (config.baseUrl ?? DEFAULT_BASE_URL).replace(/\/$/, "");
+  const apiKey = config.apiKey;
+  const model = config.model?.trim() || OPENAI_DEFAULTS.model;
+  const baseUrl = (config.baseUrl?.trim() || OPENAI_DEFAULTS.baseUrl).replace(
+    /\/$/,
+    "",
+  );
 
   return async (text: string): Promise<number[]> => {
     const response = await fetch(`${baseUrl}/embeddings`, {

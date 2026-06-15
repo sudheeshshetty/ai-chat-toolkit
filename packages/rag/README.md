@@ -2,12 +2,12 @@
 
 Optional RAG plugin for [ai-chat-toolkit-server](https://www.npmjs.com/package/ai-chat-toolkit-server). Index documents from pluggable sources, embed and store chunks, and inject retrieved context before each LLM call via the server plugin API.
 
-**Current release:** 0.1.0 (initial release)
+**Current release:** 0.1.1 (configurable embeddings)
 
 ## Install
 
 ```bash
-npm install ai-chat-toolkit-rag ai-chat-toolkit-server@^1.2.0
+npm install ai-chat-toolkit-rag@^0.1.1 ai-chat-toolkit-server@^1.2.0
 ```
 
 You also need a compatible `RagSource` and `RagStore` implementation (separate packages or your own adapters). This core package defines the contracts only.
@@ -112,6 +112,34 @@ embeddings: {
   model: "text-embedding-3-small",
 }
 ```
+
+### Environment-based config
+
+```js
+import { rag, embeddingsFromEnv } from "ai-chat-toolkit-rag";
+
+server.use(
+  rag({
+    sources: [mySource],
+    store: myStore,
+    embeddings: embeddingsFromEnv({
+      provider: process.env.EMBEDDING_PROVIDER,
+      apiKey: process.env.EMBEDDING_API_KEY || process.env.OPENAI_API_KEY,
+      model: process.env.EMBEDDING_MODEL,
+      baseUrl: process.env.EMBEDDING_BASE_URL,
+    }),
+  }),
+);
+```
+
+| Input | Typical env var | Default |
+|-------|-----------------|---------|
+| `provider` | `EMBEDDING_PROVIDER` | `openai` |
+| `apiKey` | `EMBEDDING_API_KEY` | — |
+| `model` | `EMBEDDING_MODEL` | per-provider default |
+| `baseUrl` | `EMBEDDING_BASE_URL` | per-provider default |
+
+Google, Cohere, and Voyage have defaults in `EMBEDDING_PROVIDER_DEFAULTS`; only **openai** is implemented today.
 
 Custom embedder:
 
