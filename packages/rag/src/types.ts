@@ -67,11 +67,17 @@ export interface RagStore {
 
 export type EmbedTextFn = (text: string) => Promise<number[]>;
 
-export interface OpenAIEmbeddingsConfig {
-  provider: "openai";
+export type { EmbeddingProvider } from "./embeddings/embeddingDefaults.js";
+
+export interface ProviderEmbeddingsConfig {
+  provider: import("./embeddings/embeddingDefaults.js").EmbeddingProvider;
   apiKey: string;
   model?: string;
   baseUrl?: string;
+}
+
+export interface OpenAIEmbeddingsConfig extends ProviderEmbeddingsConfig {
+  provider: "openai";
 }
 
 export interface CustomEmbeddingsConfig {
@@ -80,7 +86,7 @@ export interface CustomEmbeddingsConfig {
 }
 
 export type RagEmbeddingsConfig =
-  | OpenAIEmbeddingsConfig
+  | ProviderEmbeddingsConfig
   | CustomEmbeddingsConfig;
 
 export interface RagChunkingConfig {

@@ -4,6 +4,12 @@ All notable changes to **ai-chat-toolkit-rag** are documented here.
 
 Versioning follows [Semantic Versioning](https://semver.org/).
 
+## [0.1.1] — 2026-06-15
+
+- **Configurable embeddings** — `resolveEmbeddingsConfig()`, `embeddingsFromEnv()`, and `EMBEDDING_PROVIDER_DEFAULTS` for provider, apiKey, model, and baseUrl.
+- **Provider types** — `EmbeddingProvider`, `ProviderEmbeddingsConfig`; Google, Cohere, and Voyage typed with defaults (only OpenAI implemented).
+- **OpenAI fallbacks** — `createOpenAIEmbedder()` applies default model/baseUrl from central defaults when omitted.
+
 ## [0.1.0] — 2026-06-14
 
 - Added initial optional RAG plugin via `rag(options)` and `server.use(rag(...))`.

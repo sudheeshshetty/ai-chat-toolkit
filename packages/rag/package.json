@@ -1,6 +1,6 @@
 {
   "name": "ai-chat-toolkit-rag",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Optional RAG plugin for ai-chat-toolkit-server with chunking, embeddings, and source/store contracts",
   "license": "MIT",
   "type": "module",
@@ -22,7 +22,7 @@
     "build": "tsup",
     "dev": "tsup --watch",
     "clean": "rm -rf dist",
-    "test": "node --import tsx/esm --test src/rag.test.ts"
+    "test": "node --import tsx/esm --test src/rag.test.ts src/embeddings/resolveEmbeddingsConfig.test.ts src/embeddings/openaiEmbeddings.test.ts"
   },
   "peerDependencies": {
     "ai-chat-toolkit-server": "^1.2.0"

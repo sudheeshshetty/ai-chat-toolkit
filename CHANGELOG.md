@@ -8,7 +8,7 @@ Each published package also has its own changelog (included on npm):
 |---------|-----------|-----------------|
 | ai-chat-toolkit-server | [packages/server/CHANGELOG.md](./packages/server/CHANGELOG.md) | 1.2.1 |
 | ai-chat-toolkit-widget | [packages/widget/CHANGELOG.md](./packages/widget/CHANGELOG.md) | 1.0.0 |
-| ai-chat-toolkit-rag | [packages/rag/CHANGELOG.md](./packages/rag/CHANGELOG.md) | 0.1.0 |
+| ai-chat-toolkit-rag | [packages/rag/CHANGELOG.md](./packages/rag/CHANGELOG.md) | 0.1.1 |
 
 Versioning follows [Semantic Versioning](https://semver.org/) per package. Packages release independently with prefixed git tags (`server-v*`, `widget-v*`, `rag-v*`).
 
