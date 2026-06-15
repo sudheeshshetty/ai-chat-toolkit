@@ -4,7 +4,7 @@ All notable changes to **ai-chat-toolkit-rag** are documented here.
 
 Versioning follows [Semantic Versioning](https://semver.org/).
 
-## [0.1.1] — Unreleased
+## [0.1.1] — 2026-06-15
 
 - **Configurable embeddings** — `resolveEmbeddingsConfig()`, `embeddingsFromEnv()`, and `EMBEDDING_PROVIDER_DEFAULTS` for provider, apiKey, model, and baseUrl.
 - **Provider types** — `EmbeddingProvider`, `ProviderEmbeddingsConfig`; Google, Cohere, and Voyage typed with defaults (only OpenAI implemented).
