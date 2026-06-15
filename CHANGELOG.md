@@ -14,7 +14,7 @@ Versioning follows [Semantic Versioning](https://semver.org/) per package. Packa
 
 ## Recent releases
 
-### Unreleased
+### 2026-06-15
 
 - **ai-chat-toolkit-server@1.2.1** — `serverOptionsFromEnv()` for env-based chat provider config ([details](./packages/server/CHANGELOG.md#121--unreleased))
 
