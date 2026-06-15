@@ -4,6 +4,12 @@ All notable changes to **ai-chat-toolkit-server** are documented here.
 
 Versioning follows [Semantic Versioning](https://semver.org/).
 
+## [1.2.1] — 2026-06-15
+
+- **`serverOptionsFromEnv()`** — build `AiChatServer` options from env-style inputs (`provider`, `apiKey`, `model`, `baseUrl`).
+- **Provider aliases** — `openai` maps to `openai-compatible`; unknown/missing provider defaults to `groq`.
+- **Defaults** — `CHAT_PROVIDER_DEFAULTS` and `DEFAULT_CHAT_PROVIDER` exported for per-provider model/base URL defaults.
+
 ## [1.2.0] — 2026-06-14
 
 Backward-compatible minor release. Default behavior is unchanged — existing apps work without code changes.

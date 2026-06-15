@@ -7,6 +7,13 @@ export { OllamaProvider } from "./providers/OllamaProvider.js";
 export { createCorsMiddleware } from "./express/corsMiddleware.js";
 export { attachExpressRoutes } from "./express/attachExpressRoutes.js";
 export { AiChatServerError, toErrorMessage } from "./utils/errors.js";
+export {
+  CHAT_PROVIDER_DEFAULTS,
+  DEFAULT_CHAT_PROVIDER,
+} from "./config/providerDefaults.js";
+export { serverOptionsFromEnv } from "./config/serverOptionsFromEnv.js";
+export type { ChatProviderDefaults } from "./config/providerDefaults.js";
+export type { ServerOptionsFromEnvInput } from "./config/serverOptionsFromEnv.js";
 export type {
   AiChatServerPlugin,
   AiChatServerPluginHost,
