@@ -10,6 +10,7 @@ Each published package also has its own changelog (included on npm):
 | ai-chat-toolkit-widget | [packages/widget/CHANGELOG.md](./packages/widget/CHANGELOG.md) | 1.0.0 |
 | ai-chat-toolkit-rag | [packages/rag/CHANGELOG.md](./packages/rag/CHANGELOG.md) | 0.1.1 |
 | ai-chat-toolkit-rag-source-local | [packages/rag-source-local/CHANGELOG.md](./packages/rag-source-local/CHANGELOG.md) | 1.0.0 |
+| ai-chat-toolkit-rag-store-memory | [packages/rag-store-memory/CHANGELOG.md](./packages/rag-store-memory/CHANGELOG.md) | 1.0.0 |
 
 Versioning follows [Semantic Versioning](https://semver.org/) per package. Packages release independently with prefixed git tags (`server-v*`, `widget-v*`, `rag-v*`).
 
@@ -18,6 +19,7 @@ Versioning follows [Semantic Versioning](https://semver.org/) per package. Packa
 ### 2026-05-30
 
 - **ai-chat-toolkit-rag-source-local@1.0.0** — filesystem `RagSource` for `.txt`, `.md`, and `.json` documents ([details](./packages/rag-source-local/CHANGELOG.md#100--2026-05-30))
+- **ai-chat-toolkit-rag-store-memory@1.0.0** — in-memory `RagStore` with cosine similarity search ([details](./packages/rag-store-memory/CHANGELOG.md#100--2026-05-30))
 
 ### 2026-06-15
 
