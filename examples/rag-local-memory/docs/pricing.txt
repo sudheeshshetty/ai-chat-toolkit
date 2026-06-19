@@ -1,0 +1,7 @@
+Demo Product Pricing
+
+- Starter plan: $19.99 per month
+- Pro plan: $49.99 per month
+- Enterprise: contact sales
+
+All plans include unlimited chat history and email support.
