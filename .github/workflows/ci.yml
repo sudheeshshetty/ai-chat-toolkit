@@ -43,3 +43,6 @@ jobs:
 
       - name: Test rag-source-local
         run: pnpm --filter ai-chat-toolkit-rag-source-local test
+
+      - name: Test rag-store-memory
+        run: pnpm --filter ai-chat-toolkit-rag-store-memory test
