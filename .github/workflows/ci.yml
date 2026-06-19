@@ -40,3 +40,6 @@ jobs:
 
       - name: Test rag
         run: pnpm --filter ai-chat-toolkit-rag test
+
+      - name: Test rag-source-local
+        run: pnpm --filter ai-chat-toolkit-rag-source-local test
