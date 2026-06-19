@@ -19,6 +19,7 @@
     "CHANGELOG.md"
   ],
   "scripts": {
+    "prebuild": "pnpm --filter ai-chat-toolkit-rag build",
     "build": "tsup",
     "dev": "tsup --watch",
     "clean": "rm -rf dist",
